@@ -25,6 +25,7 @@ string Keyboard::ShowKeyboard(){
 				break;
 			case '\b':
 				if(len>0){
+					pLcd->Fill(0,0,480,100,0x0000);
 					str[--len] = '\0';
 				}
 				break;
@@ -36,7 +37,6 @@ string Keyboard::ShowKeyboard(){
 			case 0:
 				break;
 			}
-			pLcd->Fill(0,0,400,100,0x0000);
 			pLcd->ShowString(0, 0, 408, 48, 48, str, 0);
 			if(len>17)
 				pLcd->ShowString(0, 50, 408, 48, 48, str+17, 0);

@@ -19,24 +19,18 @@
 #include "libutil/touch_menu.h"
 
 #include "keyboard.h"
+#include "nfc.h"
+#include "ui.h"
 
-namespace libbase
-{
-	namespace k60
-	{
+namespace libbase{
+namespace k60{
+Mcg::Config Mcg::GetMcgConfig(){
+	Mcg::Config config;
+	config.external_oscillator_khz = 50000;
+	config.core_clock_khz = 150000;
+	return config;
+}}}
 
-		Mcg::Config Mcg::GetMcgConfig()
-		{
-			Mcg::Config config;
-			config.external_oscillator_khz = 50000;
-			config.core_clock_khz = 150000;
-			return config;
-		}
-
-	}
-}
-
-//using libsc::System;
 using namespace libsc;
 using namespace libbase::k60;
 using libsc::k60::Dk100;
@@ -44,64 +38,63 @@ using std::vector;
 using libsc::k60::TouchScreenLcd;
 using libutil::Touch_Menu;
 
-
-
 int yo = 0;
 int sum=0;
 
+Dk100* pNfc;
+uint32_t know = 0;
+Byte a=0,b=0,c=0,d=0;
+
 int main(){
 	System::Init();
-	Led::Config led_config;
-//	led_config.id = 2;
-//	Led led2(led_config);
-//	led_config.id = 3;
-//	Led led3(led_config);
 
 	Dk100::Config config;
 	config.id = 0;
 	config.baud_rate = libbase::k60::Uart::Config::BaudRate::k9600;
 	config.rx_isr = [&](const Byte* buff, const size_t& size){
 		sum++;
-		return true;
+		return pNfc->Listener(buff,size);
 	};
 	Dk100 nfc(config);
-
-	bool show = false;
-
+	pNfc = &nfc;
+	nfc.SetReadSuccessHandler([&](const Byte& sector, const Byte *data){
+		a=data[0];
+		b=data[1];
+		c=data[2];
+		d=data[3];
+	});
+	Nfc nfcMgr(&nfc);
 
 	TouchScreenLcd lcd;
 	lcd.SetTouchingInterrupt([&](Gpi*,TouchScreenLcd* pLcd){
 		yo++;
-		show = true;
 	});
 	Keyboard keyboard(&lcd);
-//	Flash::Config flash_config;
-//	Flash flash(flash_config);
-////	lcd.DisplayOn();
-////	lcd.ShowNum(0,0,1234,4,48);
-////	lcd.DrawCircle(50,50,50);
-//	Touch_Menu menu(&lcd,&flash);
+
+	Flash::Config flash_config;
+	Flash flash(flash_config);
+	Touch_Menu menu(&lcd,&flash);
 //	uint8_t h=0;
+//	string s ="handsome";
 //	menu.AddItem("hi",&h,&menu.main_menu);
-//	menu.AddItem("hi",&h,&menu.main_menu);
-//	menu.AddItem("hi",&h,&menu.main_menu);
-//	menu.AddItem("hi",&h,&menu.main_menu);
-//	menu.AddItem("hi",&h,&menu.main_menu);
-//	menu.AddItem("hi",&h,&menu.main_menu);
-//	menu.AddItem("hi",&h,&menu.main_menu);
-//	menu.AddItem("hi",&h,&menu.main_menu);
-//	menu.AddItem("hi",&h,&menu.main_menu);
-//	menu.AddItem("hi",&h,&menu.main_menu);
-//	menu.AddItem("hi",&h,&menu.main_menu);
-//	menu.AddItem("hi",&h,&menu.main_menu);
-//	menu.AddItem("hi",&h,&menu.main_menu);
-//	menu.AddItem("hi",&h,&menu.main_menu);
-//	menu.AddItem("hi",&h,&menu.main_menu);
+//	menu.AddItem("str",&s,&menu.main_menu);
 //	menu.EnterMenu(&menu.main_menu,0,0,480,800,48);
-	keyboard.ShowKeyboard();
+	Ui ui(&lcd,&menu,&nfcMgr);
+	ui.GoMainMenu();
+
+	Byte buf[4] = {1,2,3,4};
+	pNfc->SendWrite(0x04,buf);
+	pNfc->SendRead(0x04);
+	Byte* y = pNfc->GetData();
+	lcd.ShowNum(0,250,y[0],4,48);
+	lcd.ShowNum(0,300,y[1],4,48);
+	lcd.ShowNum(0,350,y[2],4,48);
+	lcd.ShowNum(0,400,y[3],4,48);
+	memcpy(buf,&know,4);
+	know = know + 0;
+
 	while(1){
-//			led2.Switch();
-		nfc.SendStr("A");
+//		nfc.SendStr("A");
 		lcd.ShowNum(0,0,yo,4,48);
 		lcd.ShowNum(0,50,lcd.touch_status,1,48);
 		lcd.ShowNum(0,100,System::Time(),4,48);
