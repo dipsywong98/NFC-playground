@@ -55,6 +55,8 @@ void GoMainMenu(){
 	//readcard
 	pMenu->AddItem("read card",[&](){this->ReadCardDisplay();},&pMenu->main_menu);
 
+	//clearcard
+	pMenu->AddItem("clear card",[&](){this->ClearCardDisplay();},&pMenu->main_menu);
 
 	pMenu->EnterMenu(&pMenu->main_menu,0,0,480,800,48);
 }
@@ -62,7 +64,7 @@ void GoMainMenu(){
 void FormatCardDisplay(){
 	terminate = false;
 	StartCancelNfcListener();
-	if(pNfcMgr->FormatCard(temp_card_id,temp_balance)){
+	if(pNfcMgr->FormatCard(temp_card_id,temp_balance,temp_name)){
 		pLcd->ShowString(0,0,480,48,48,"successfully formatted",0);
 		System::DelayMs(1000);
 	} else {
@@ -75,19 +77,31 @@ void FormatCardDisplay(){
 void ReadCardDisplay(){
 	terminate = false;
 	StartCancelNfcListener();
-	if(pNfcMgr->ReadCard()){
+	if(pNfcMgr->ReadWholeCard()){
 		pLcd->ShowString(0,0,480,48,48,"Record (Tap to leave):",0);
 		char buf[20];
-		sprintf(buf,"id: %d",pNfcMgr->card_id);
+		sprintf(buf,"id: %d",pNfcMgr->m_card_id);
 		pLcd->ShowString(0,50,480,48,48,buf,0);
-		sprintf(buf,"balance: %d",pNfcMgr->balance);
+		sprintf(buf,"balance: %d",pNfcMgr->m_balance);
 		pLcd->ShowString(0,100,480,48,48,buf,0);
+		sprintf(buf,"name: %s;",pNfcMgr->m_name.c_str());
+		pLcd->ShowString(0,150,480,48,48,buf,0);
 		while(!terminate){
-			sprintf(buf,"scan %d",pLcd->Scan(0));
-			pLcd->ShowString(0,150,480,48,48,buf,0);
-			sprintf(buf,"status %d",pLcd->touch_status);
-			pLcd->ShowString(0,200,480,48,48,buf,0);
+			pLcd->ShowNum(0,700,System::Time()/100%10,1,48);
 		}
+	} else {
+		pLcd->ShowString(0,0,480,48,48,"operation canceled  ",0);
+		System::DelayMs(1000);
+	}
+	CancelCancelNfcListener();
+}
+
+void ClearCardDisplay(){
+	terminate = false;
+	StartCancelNfcListener();
+	if(pNfcMgr->ClearWholeCard()){
+		pLcd->ShowString(0,0,480,48,48,"successfully cleared",0);
+		System::DelayMs(1000);
 	} else {
 		pLcd->ShowString(0,0,480,48,48,"operation canceled  ",0);
 		System::DelayMs(1000);

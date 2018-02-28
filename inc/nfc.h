@@ -30,8 +30,9 @@ class Nfc{
 public:
 
 
-	uint16_t card_id = 0;
-	int16_t balance = 0;
+	uint16_t m_card_id = 0;
+	int16_t m_balance = 0;
+	std::string m_name="";
 
 	uint32_t last_tap = 0, checksum = 0;
 
@@ -42,15 +43,42 @@ public:
 
 	void OnRead(const Byte& sector, const Byte *data);
 
-	bool WriteCard();
+	/**
+	 * Send write to multiple sectors
+	 * @param {data} data array, length need to be multiple of 4
+	 * @param {len} number of byte in data array
+	 * @return true for operation cancelled
+	 */
+	bool SendWriteMulti(const Byte& sector, const Byte* data, const uint8_t& len);
 
+	/**
+	 * Send read to multiple sectors
+	 * @param {data} data array to accept returned data
+	 * @param {len} number of sectors
+	 * @return true for operation cancelled
+	 */
+	bool SendReadMulti(const Byte& sector, Byte* data, const uint8_t& len);
+
+	/**
+	 * Read the essential part of the card
+	 * return false when canceled or invalid card
+	 */
 	bool ReadCard();
 
-	bool FormatCard(uint16_t id, int16_t balance);
+	/**
+	 * Read all sectors of the card
+	 */
+	bool ReadWholeCard();
+
+	bool ReadName();
+
+	bool FormatCard(uint16_t id, int16_t balance, std::string& name);
 
 	void Cancel(){
 		pNfc->Cancel();
 	}
+
+	bool ClearWholeCard();
 
 private:
 

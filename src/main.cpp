@@ -18,7 +18,7 @@
 #include "libsc/k60/dk100.h"
 #include "libutil/touch_menu.h"
 
-#include "keyboard.h"
+#include "libutil/touch_keyboard.h"
 #include "nfc.h"
 #include "ui.h"
 
@@ -37,6 +37,7 @@ using libsc::k60::Dk100;
 using std::vector;
 using libsc::k60::TouchScreenLcd;
 using libutil::Touch_Menu;
+using libutil::TouchKeyboard;
 
 int yo = 0;
 int sum=0;
@@ -48,50 +49,70 @@ Byte a=0,b=0,c=0,d=0;
 int main(){
 	System::Init();
 
-	Dk100::Config config;
-	config.id = 0;
-	config.baud_rate = libbase::k60::Uart::Config::BaudRate::k9600;
-	config.rx_isr = [&](const Byte* buff, const size_t& size){
-		sum++;
-		return pNfc->Listener(buff,size);
-	};
-	Dk100 nfc(config);
-	pNfc = &nfc;
-	nfc.SetReadSuccessHandler([&](const Byte& sector, const Byte *data){
-		a=data[0];
-		b=data[1];
-		c=data[2];
-		d=data[3];
-	});
-	Nfc nfcMgr(&nfc);
+//	Dk100::Config config;
+//	config.id = 0;
+//	config.baud_rate = libbase::k60::Uart::Config::BaudRate::k9600;
+//	config.rx_isr = [&](const Byte* buff, const size_t& size){
+//		sum++;
+//		return pNfc->Listener(buff,size);
+//	};
+//	Dk100 nfc(config);
+//	pNfc = &nfc;
+//	nfc.SetReadSuccessHandler([&](const Byte& sector, const Byte *data){
+//		a=data[0];
+//		b=data[1];
+//		c=data[2];
+//		d=data[3];
+//	});
+//	Nfc nfcMgr(&nfc);
+//	pNfc->SendRead(0x05);
 
 	TouchScreenLcd lcd;
 	lcd.SetTouchingInterrupt([&](Gpi*,TouchScreenLcd* pLcd){
 		yo++;
 	});
-	Keyboard keyboard(&lcd);
+	TouchKeyboard keyboard(&lcd);
 
-	Flash::Config flash_config;
-	Flash flash(flash_config);
-	Touch_Menu menu(&lcd,&flash);
-//	uint8_t h=0;
-//	string s ="handsome";
-//	menu.AddItem("hi",&h,&menu.main_menu);
-//	menu.AddItem("str",&s,&menu.main_menu);
-//	menu.EnterMenu(&menu.main_menu,0,0,480,800,48);
-	Ui ui(&lcd,&menu,&nfcMgr);
-	ui.GoMainMenu();
+//	Flash::Config flash_config;
+//	Flash flash(flash_config);
+//	Touch_Menu menu(&lcd,&flash);
 
-	Byte buf[4] = {1,2,3,4};
-	pNfc->SendWrite(0x04,buf);
-	pNfc->SendRead(0x04);
-	Byte* y = pNfc->GetData();
-	lcd.ShowNum(0,250,y[0],4,48);
-	lcd.ShowNum(0,300,y[1],4,48);
-	lcd.ShowNum(0,350,y[2],4,48);
-	lcd.ShowNum(0,400,y[3],4,48);
-	memcpy(buf,&know,4);
-	know = know + 0;
+//	Ui ui(&lcd,&menu,&nfcMgr);
+//	std::string& str = nfcMgr.m_name;
+//	ui.GoMainMenu();
+
+//	pNfc->SendRead(0x05);
+//	a = pNfc->GetData()[0];
+//	b = pNfc->GetData()[1];
+//	c = pNfc->GetData()[2];
+//	d = pNfc->GetData()[3];
+//
+//	lcd.ShowChar(0,0,a,48,0);
+//	lcd.ShowChar(30,0,b,48,0);
+//	lcd.ShowChar(60,0,c,48,0);
+//	lcd.ShowChar(90,0,d,48,0);
+
+//	pNfc->SendRead(0x06);
+//	a = pNfc->GetData()[0];
+//	b = pNfc->GetData()[1];
+//	c = pNfc->GetData()[2];
+//	d = pNfc->GetData()[3];
+//	lcd.ShowChar(0,50,a,48,0);
+//	lcd.ShowChar(30,50,b,48,0);
+//	lcd.ShowChar(60,50,c,48,0);
+//	lcd.ShowChar(90,50,d,48,0);
+//	while(1);
+
+//	Byte buf[4] = {1,2,3,4};
+//	pNfc->SendWrite(0x04,buf);
+//	pNfc->SendRead(0x04);
+//	Byte* y = pNfc->GetData();
+//	lcd.ShowNum(0,250,y[0],4,48);
+//	lcd.ShowNum(0,300,y[1],4,48);
+//	lcd.ShowNum(0,350,y[2],4,48);
+//	lcd.ShowNum(0,400,y[3],4,48);
+//	memcpy(buf,&know,4);
+//	know = know + 0;
 
 	while(1){
 //		nfc.SendStr("A");
