@@ -84,7 +84,7 @@ void ReadCardDisplay(){
 		pLcd->ShowString(0,50,480,48,48,buf,0);
 		sprintf(buf,"balance: %d",pNfcMgr->m_balance);
 		pLcd->ShowString(0,100,480,48,48,buf,0);
-		sprintf(buf,"name: %s;",pNfcMgr->m_name.c_str());
+		sprintf(buf,"name: %s;",pNfcMgr->m_name);
 		pLcd->ShowString(0,150,480,48,48,buf,0);
 		while(!terminate){
 			pLcd->ShowNum(0,700,System::Time()/100%10,1,48);

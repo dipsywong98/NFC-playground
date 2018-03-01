@@ -32,7 +32,8 @@ public:
 
 	uint16_t m_card_id = 0;
 	int16_t m_balance = 0;
-	std::string m_name="";
+	char m_name[34];
+	char temp[4];
 
 	uint32_t last_tap = 0, checksum = 0;
 
@@ -46,7 +47,7 @@ public:
 	/**
 	 * Send write to multiple sectors
 	 * @param {data} data array, length need to be multiple of 4
-	 * @param {len} number of byte in data array
+	 * @param {len} number of sectors
 	 * @return true for operation cancelled
 	 */
 	bool SendWriteMulti(const Byte& sector, const Byte* data, const uint8_t& len);

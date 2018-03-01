@@ -54,25 +54,39 @@ void Nfc::OnRead(const Byte& sector, const Byte *data){
 }
 
 bool Nfc::SendWriteMulti(const Byte& sector, const Byte* data, const uint8_t& len){
-	Byte buf[4];
-	for(uint8_t i = 0; i<len; i+=4){
-		memcpy(buf, data + i, 4);
-		if(!pNfc->SendWrite(sector+i/4,buf)){
+	for(uint8_t i = 0; i<len; i++){
+		if(!pNfc->SendWrite(sector+i,data + i*4)){
 			return false;
 		}
 	}
+
+//	memcpy(buf,data,4);
+//	pNfc->SendWrite(0x05,buf);
+//
+//	memcpy(buf,data+4,4);
+//	pNfc->SendWrite(0x06,buf);
+//
+//	memcpy(buf,data+8,4);
+//	pNfc->SendWrite(0x07,buf);
+
 	return true;
 }
 
-bool Nfc::SendReadMulti(const Byte& sector, Byte* data, const uint8_t& size){
-	Byte *buf;
-	for(uint8_t i = 0; i<size; i++){
-		if(pNfc->SendRead(sector+i)){
-			memcpy(data + i*4, pNfc->GetData(), 4);
-		} else {
+bool Nfc::SendReadMulti(const Byte& sector, Byte* data, const uint8_t& len){
+	for(uint8_t i = 0; i<len; i++){
+		if(!pNfc->SendRead(sector+i,data + i*4)){
 			return false;
 		}
 	}
+//	pNfc->SendRead(0x05);
+//	memcpy(data,pNfc->GetData(),4);
+//
+//	pNfc->SendRead(0x06);
+//	memcpy(data+4,pNfc->GetData(),4);
+//
+//	pNfc->SendRead(0x07);
+//	memcpy(data+8,pNfc->GetData(),4);
+
 	return true;
 }
 
@@ -104,9 +118,9 @@ bool Nfc::ReadWholeCard(){
 }
 
 bool Nfc::ReadName(){
-	char buf[34];
-	if(SendReadMulti(0x05,(Byte*)buf,8)){
-		m_name = std::string(buf);
+//	pNfc->SendRead(0x05);
+//	memcpy(temp,pNfc->GetData(),4);
+	if(SendReadMulti(0x05,(Byte*)m_name,8)){
 		return true;
 	} else {
 		return false;
@@ -125,8 +139,9 @@ bool Nfc::FormatCard(uint16_t id, int16_t balance, std::string& name){
 	memcpy(temp+2,&balance,2);
 	if(!pNfc->SendWrite(0x04,temp)) return false;
 
-	while(name.size()%4!=0)name+=' ';
-	if(!SendWriteMulti(0x05,(Byte*)name.c_str(),name.size())) return false;
+	char name_buf[34]={};
+	sprintf(name_buf,"%s",name.c_str());
+	if(!SendWriteMulti(0x05,(Byte*) name_buf,8)) return false;
 
 	uint32_t time = 0;
 	memcpy(temp, &time, 4);
