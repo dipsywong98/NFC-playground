@@ -28,98 +28,28 @@ using libutil::Touch_Menu;
 
 class Ui{
 public:
-uint16_t temp_card_id = 0;
-int16_t temp_balance = 0;
-std::string temp_name = "YOO";
-TouchScreenLcd* pLcd;
-Touch_Menu* pMenu;
-Nfc* pNfcMgr;
+	uint16_t temp_card_id = 0;
+	int16_t temp_balance = 0;
+	std::string temp_name = "YOO";
+	TouchScreenLcd* pLcd;
+	Touch_Menu* pMenu;
+	Nfc* pNfcMgr;
 
-bool terminate = false;
+	bool terminate = false;
 
-Ui(TouchScreenLcd* pLcd, Touch_Menu* pMenu, Nfc* pNfcMgr):
-pLcd(pLcd),pMenu(pMenu),pNfcMgr(pNfcMgr)
-{
+	Ui(TouchScreenLcd* pLcd, Touch_Menu* pMenu, Nfc* pNfcMgr);
 
-}
+	void GoMainMenu();
 
-void GoMainMenu(){
-	//format submenu
-	pMenu->AddItem("format card",&pMenu->main_menu);
-	libutil::Touch_Menu::Menu* formatMenu = pMenu->main_menu.menu_items[0].sub_menu;
-	pMenu->AddItem("id",&temp_card_id,formatMenu);
-	pMenu->AddItem("balance",&temp_balance,formatMenu);
-	pMenu->AddItem("name",&temp_name,formatMenu);
-	pMenu->AddItem("Format",[&](){FormatCardDisplay();},formatMenu);
+	void FormatCardDisplay();
 
-	//readcard
-	pMenu->AddItem("read card",[&](){this->ReadCardDisplay();},&pMenu->main_menu);
+	void ReadCardDisplay();
 
-	//clearcard
-	pMenu->AddItem("clear card",[&](){this->ClearCardDisplay();},&pMenu->main_menu);
+	void ClearCardDisplay();
 
-	pMenu->EnterMenu(&pMenu->main_menu,0,0,480,800,48);
-}
+	void StartCancelNfcListener();
 
-void FormatCardDisplay(){
-	terminate = false;
-	StartCancelNfcListener();
-	if(pNfcMgr->FormatCard(temp_card_id,temp_balance,temp_name)){
-		pLcd->ShowString(0,0,480,48,48,"successfully formatted",0);
-		System::DelayMs(1000);
-	} else {
-		pLcd->ShowString(0,0,480,48,48,"operation canceled  ",0);
-		System::DelayMs(1000);
-	}
-	CancelCancelNfcListener();
-}
-
-void ReadCardDisplay(){
-	terminate = false;
-	StartCancelNfcListener();
-	if(pNfcMgr->ReadWholeCard()){
-		pLcd->ShowString(0,0,480,48,48,"Record (Tap to leave):",0);
-		char buf[20];
-		sprintf(buf,"id: %d",pNfcMgr->m_card_id);
-		pLcd->ShowString(0,50,480,48,48,buf,0);
-		sprintf(buf,"balance: %d",pNfcMgr->m_balance);
-		pLcd->ShowString(0,100,480,48,48,buf,0);
-		sprintf(buf,"name: %s;",pNfcMgr->m_name);
-		pLcd->ShowString(0,150,480,48,48,buf,0);
-		while(!terminate){
-			pLcd->ShowNum(0,700,System::Time()/100%10,1,48);
-		}
-	} else {
-		pLcd->ShowString(0,0,480,48,48,"operation canceled  ",0);
-		System::DelayMs(1000);
-	}
-	CancelCancelNfcListener();
-}
-
-void ClearCardDisplay(){
-	terminate = false;
-	StartCancelNfcListener();
-	if(pNfcMgr->ClearWholeCard()){
-		pLcd->ShowString(0,0,480,48,48,"successfully cleared",0);
-		System::DelayMs(1000);
-	} else {
-		pLcd->ShowString(0,0,480,48,48,"operation canceled  ",0);
-		System::DelayMs(1000);
-	}
-	CancelCancelNfcListener();
-}
-
-void StartCancelNfcListener(){
-	pLcd->ShowString(0,0,480,48,48,"Touch to cancel",0);
-	pLcd->SetTouchingInterrupt([&](libbase::k60::Gpi*,TouchScreenLcd*){
-		pNfcMgr->Cancel();
-		terminate = true;
-	});
-}
-
-void CancelCancelNfcListener(){
-	pLcd->SetTouchingInterrupt([&](libbase::k60::Gpi*,TouchScreenLcd*){});
-}
+	void CancelCancelNfcListener();
 
 };
 #endif /* INC_UI_H_ */
