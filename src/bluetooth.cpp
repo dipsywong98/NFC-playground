@@ -11,3 +11,8 @@ Bluetooth::Bluetooth(int bt_id, int pit_channel):
 Comm(),m_bt(GetBtConfig(bt_id)),m_pit(GetPitConfig(pit_channel)){
 
 }
+
+void Bluetooth::Handler(const Package& pkg){
+	Comm::Handler(pkg);
+	hi++;
+}

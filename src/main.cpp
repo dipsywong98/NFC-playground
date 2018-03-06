@@ -21,6 +21,7 @@
 #include "libutil/touch_keyboard.h"
 #include "nfc.h"
 #include "ui.h"
+#include "bluetooth.h"
 
 namespace libbase{
 namespace k60{
@@ -77,19 +78,22 @@ int main(){
 	Touch_Menu menu(&lcd,&flash);
 
 	Ui ui(&lcd,&menu,&nfcMgr);
-	ui.GoMainMenu();
+//	ui.GoMainMenu();
 
-	Byte x[4] = {0,0,0,0};
-	nfc.SendWrite(0x04,x);
-	nfc.SendWrite(0x05,x);
-	nfc.SendWrite(0x06,x);
-	nfc.SendWrite(0x07,x);
-	nfc.SendWrite(0x08,x);
-	nfc.SendWrite(0x09,x);
-	nfc.SendWrite(0x0A,x);
+	Bluetooth bt(1,1);
+	bt.QueuePackage({Comm::PkgType::kRequestIp,0,{}});
 
-	Byte y[12] = {'A','B','C','D','E','F','G','H','I','J','K','L'};
-	Byte z[13] = {};
+//	Byte x[4] = {0,0,0,0};
+//	nfc.SendWrite(0x04,x);
+//	nfc.SendWrite(0x05,x);
+//	nfc.SendWrite(0x06,x);
+//	nfc.SendWrite(0x07,x);
+//	nfc.SendWrite(0x08,x);
+//	nfc.SendWrite(0x09,x);
+//	nfc.SendWrite(0x0A,x);
+//
+//	Byte y[12] = {'A','B','C','D','E','F','G','H','I','J','K','L'};
+//	Byte z[13] = {};
 
 //	pNfc->SendWrite(0x05,(Byte*)"ABCD");
 //	pNfc->SendWrite(0x06,(Byte*)"EFGH");
@@ -158,7 +162,9 @@ int main(){
 //	lcd.ShowChar(270,50,b,48,0);
 //	lcd.ShowChar(300,50,c,48,0);
 //	lcd.ShowChar(330,50,d,48,0);
-	while(1);
+	while(1){
+		lcd.ShowNum(0,0,bt.GetQueueLength(),4,48);
+	}
 
 //	Byte buf[4] = {1,2,3,4};
 //	pNfc->SendWrite(0x04,buf);
