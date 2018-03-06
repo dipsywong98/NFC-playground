@@ -7,8 +7,8 @@
 
 #include "comm.h"
 
-uint16_t Comm::CalChecksum(Byte* buf,int length){
-	uint16_t sum = 0;
+uint8_t Comm::CalChecksum(Byte* buf,int length){
+	uint8_t sum = 0;
 	for(int i=0; i<length; i++){
 		if(i == length-2)continue;
 		sum+=buf[i];
@@ -16,8 +16,8 @@ uint16_t Comm::CalChecksum(Byte* buf,int length){
 	return sum;
 }
 
-uint16_t Comm::CalChecksum(const vector<Byte>& buf){
-	uint16_t sum = 0, length = buf.size();
+uint8_t Comm::CalChecksum(const vector<Byte>& buf){
+	uint8_t sum = 0, length = buf.size();
 	for(int i=0; i<length; i++){
 		if(i == length-2)continue;
 		sum+=buf[i];
@@ -25,9 +25,10 @@ uint16_t Comm::CalChecksum(const vector<Byte>& buf){
 	return sum;
 }
 
-void Comm::QueuePackage(Package pkg){
+uint8_t Comm::QueuePackage(Package pkg){
 	pkg.id = ++historic_package_sum;
 	m_sendqueue.push_back(pkg);
+	return pkg.id;
 }
 
 void Comm::SendPackageImmediate(const Package& pkg){
@@ -55,7 +56,6 @@ void Comm::Period(){
 }
 
 bool Comm::Listener(const Byte* data, const size_t& size){
-	lol++;
 	for(uint8_t i=0; i<size; i++){
 		if(data[i]==0xAA)buffer.clear();
 		buffer.push_back(data[i]);
@@ -79,7 +79,7 @@ void Comm::BuildBufferPackage(const vector<Byte>& buffer){
 	memset(debug,0,100);
 	memcpy(debug,&*buffer.begin(),buffer[1]);
 
-	uint16_t checksum = 0;
+	uint8_t checksum = 0;
 	for(int i=0;i<buffer.size();i++){
 		if(i==buffer.size()-2)continue;
 		checksum += buffer[i];

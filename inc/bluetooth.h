@@ -22,16 +22,9 @@ public:
 	Bluetooth(int bt_id, int pit_channel);
 	~Bluetooth(){}
 
-	uint16_t yo = 0;
-	uint16_t hi = 0;
-	uint16_t lol = 0;
-
 	void SendBuffer(const Byte* data, const size_t& size){
-		yo++;
 		m_bt.SendBuffer(data,size);
 	}
-
-	virtual void Handler(const Package& pkg);
 
 private:
 	JyMcuBt106 m_bt;

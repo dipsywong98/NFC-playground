@@ -8,9 +8,9 @@
 #ifndef INC_COMM_H_
 #define INC_COMM_H_
 
-#include <algorithm>
 #include <vector>
 #include <cstring>
+#include <functional>
 
 #include "libbase/k60/mcg.h"
 #include "libsc/system.h"
@@ -37,10 +37,6 @@ using std::vector;
 class Comm{
 public:
 
-	int lol=0;
-	int last_send;
-	uint32_t historic_package_sum = 0;
-
 	struct PkgType{
 		static const Byte
 				kACK = 0x00,
@@ -52,28 +48,57 @@ public:
 
 	struct Package{
 		Byte type;
-		uint16_t id;
+		uint8_t id;
 		vector<Byte> data;
 	};
 
-	Comm():last_send(0){}
+	Comm(){}
 	virtual ~Comm(){};
 
-	uint16_t CalChecksum(Byte* buf,int length);
-	uint16_t CalChecksum(const vector<Byte>& buf);
+	/**
+	 * Calculate checksum
+	 */
+	uint8_t CalChecksum(Byte* buf,int length);
+	uint8_t CalChecksum(const vector<Byte>& buf);
 
-	void QueuePackage(Package pkg);
+	/**
+	 * QueuePackage
+	 * all of them send every 10ms
+	 * remove on received ACK with corresponding id
+	 * return the unique id assigned
+	 */
+	uint8_t QueuePackage(Package pkg);
 
+	/**
+	 * SendPackage
+	 * convert the package to Byte buffer and send immediately
+	 */
 	void SendPackageImmediate(const Package& pkg);
 
+	/**
+	 * should be called every 10ms
+	 */
 	void Period();
 
+	/**
+	 * bluetooth isr
+	 * parse the received bytes
+	 */
 	bool Listener(const Byte* data, const size_t& size);
 
+	/**
+	 * parse the byte array into package
+	 */
 	void BuildBufferPackage(const vector<Byte>& buffer);
 
+	/**
+	 * handle the package
+	 */
 	void Handler(const Package& pkg);
 
+	/**
+	 * send buffer implementation
+	 */
 	virtual void SendBuffer(const Byte* data, const size_t& size) = 0;
 
 	int GetQueueLength(){return m_sendqueue.size();}
@@ -82,6 +107,9 @@ private:
 
 	vector<Package> m_sendqueue;
 	vector<Byte> buffer;
+
+	//for generating unique id
+	uint32_t historic_package_sum = 0;
 };
 
 
