@@ -56,19 +56,16 @@ void Comm::Period(){
 }
 
 bool Comm::Listener(const Byte* data, const size_t& size){
+	Byte debug[100];
+	memset(debug,0,100);
+	memcpy(debug,&*buffer.begin(),buffer.size());
 	for(uint8_t i=0; i<size; i++){
 		if(data[i]==0xAA)buffer.clear();
 		buffer.push_back(data[i]);
 		if(buffer.size() > 1){
 			if(data[i]==0xFF && buffer.size() == buffer[1]){
 				BuildBufferPackage(buffer);
-				buffer.clear();
-			} else if (buffer.size() > buffer[1]) {
-				buffer.clear();
 			}
-		}
-		if(data[i]==0xFF){
-			buffer.clear();
 		}
 	}
 	return true;
@@ -104,5 +101,8 @@ void Comm::Handler(const Package& pkg){
 		}
 	} else {
 		SendPackageImmediate({PkgType::kACK,pkg.id,{}});
+	}
+	if(m_CustomHandler){
+		m_CustomHandler(pkg);
 	}
 }

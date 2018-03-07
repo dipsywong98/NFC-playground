@@ -41,7 +41,6 @@ public:
 		static const Byte
 				kACK = 0x00,
 				kRequestProducts = 0x01,
-				kProductCount = 0x02,
 				kPurchase = 0x02,
 				kRequestIp = 0x03;
 	};
@@ -103,6 +102,10 @@ public:
 
 	int GetQueueLength(){return m_sendqueue.size();}
 
+	void SetCustomHandler(std::function<void(const Package&)> CustomHandler){
+		m_CustomHandler = CustomHandler;
+	}
+
 private:
 
 	vector<Package> m_sendqueue;
@@ -110,6 +113,8 @@ private:
 
 	//for generating unique id
 	uint32_t historic_package_sum = 0;
+
+	std::function<void(const Package&)> m_CustomHandler;
 };
 
 

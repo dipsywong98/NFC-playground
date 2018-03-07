@@ -43,7 +43,7 @@ private:
 	Pit::Config GetPitConfig(int pit_channel){
 		Pit::Config config;
 		config.channel = pit_channel;
-		config.count = 75000*10;
+		config.count = 75000*500;
 		config.isr = [&](Pit*){
 			Comm::Period();
 		};
