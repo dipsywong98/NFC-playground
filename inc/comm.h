@@ -37,6 +37,7 @@ using std::vector;
 class Comm{
 public:
 
+	uint8_t sent_package_count = 0;
 	uint8_t receive_package_count = 0;
 	uint8_t delete_package_count = 0;
 

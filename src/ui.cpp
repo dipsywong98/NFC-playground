@@ -7,16 +7,19 @@
 
 #include "ui.h"
 
-Ui::Ui(TouchScreenLcd* pLcd, Touch_Menu* pMenu, Nfc* pNfcMgr):
-pLcd(pLcd),pMenu(pMenu),pNfcMgr(pNfcMgr)
+Ui::Ui(TouchScreenLcd* pLcd, Touch_Menu* pMenu, Nfc* pNfcMgr, Protocol* pProtocol):
+pLcd(pLcd),pMenu(pMenu),pNfcMgr(pNfcMgr),pProtocol(pProtocol)
 {
 
-}
+	pProtocol->RequestIp();
+	pProtocol->RequestProducts();
 
-void Ui::GoMainMenu(){
+	pMenu->AddItem("Product List",&pMenu->main_menu);
+	libutil::Touch_Menu::Menu* productMenu = pMenu->main_menu.menu_items[0].sub_menu;
+
 	//format submenu
 	pMenu->AddItem("format card",&pMenu->main_menu);
-	libutil::Touch_Menu::Menu* formatMenu = pMenu->main_menu.menu_items[0].sub_menu;
+	libutil::Touch_Menu::Menu* formatMenu = pMenu->main_menu.menu_items[1].sub_menu;
 	pMenu->AddItem("id",&temp_card_id,formatMenu);
 	pMenu->AddItem("balance",&temp_balance,formatMenu);
 	pMenu->AddItem("name",&temp_name,formatMenu);
@@ -28,11 +31,22 @@ void Ui::GoMainMenu(){
 	//clearcard
 	pMenu->AddItem("clear card",[&](){this->ClearCardDisplay();},&pMenu->main_menu);
 
+	pLcd->ShowString(0,0,480,50,48,"crawling data...",0);
+
+	ip = pProtocol->AwaitRequestIp();
+	pLcd->ShowString(0,50,480,50,48,(char*)("ip"+ip).c_str(),0);
+
+	products = pProtocol->AwaitRequestProducts();
+	for(const Product& product: products){
+		pMenu->AddItem((char*)product.name,[&](){this->PurchaseProductDisplay(product);},(libutil::Touch_Menu::Menu*)productMenu);
+	}
+}
+
+void Ui::GoMainMenu(){
 	pMenu->EnterMenu(&pMenu->main_menu,0,0,480,800,48);
 }
 
 void Ui::FormatCardDisplay(){
-	terminate = false;
 	StartCancelNfcListener();
 	if(pNfcMgr->FormatCard(temp_card_id,temp_balance,temp_name)){
 		pLcd->ShowString(0,0,480,48,48,"successfully formatted",0);
@@ -45,7 +59,6 @@ void Ui::FormatCardDisplay(){
 }
 
 void Ui::ReadCardDisplay(){
-	terminate = false;
 	StartCancelNfcListener();
 	if(pNfcMgr->ReadWholeCard()){
 		pLcd->ShowString(0,0,480,48,48,"Record (Tap to leave):",0);
@@ -67,7 +80,6 @@ void Ui::ReadCardDisplay(){
 }
 
 void Ui::ClearCardDisplay(){
-	terminate = false;
 	StartCancelNfcListener();
 	if(pNfcMgr->ClearWholeCard()){
 		pLcd->ShowString(0,0,480,48,48,"successfully cleared",0);
@@ -77,6 +89,32 @@ void Ui::ClearCardDisplay(){
 		System::DelayMs(1000);
 	}
 	CancelCancelNfcListener();
+}
+
+void Ui::PurchaseProductDisplay(const Product& product){
+	StartKillAwaitListener("Tap card, Touch screen to cancel");
+	if(pNfcMgr->ReadCard()){
+		const uint16_t card_id = pNfcMgr->m_card_id;
+		int16_t balance = pNfcMgr->m_balance;
+		uint32_t checksum = pNfcMgr->checksum;
+		pProtocol->RequestPurchase(card_id,product.id,checksum);
+		if(pProtocol->AwaitRequestPurchase()){
+			uint32_t time = pProtocol->timestamp;
+			balance -= product.price;
+			if(pNfcMgr->UpdateBalance(card_id,balance,time)){
+				pLcd->ShowString(0,0,480,48,48,"purchase",0);
+			}
+		} else if (terminate){
+			pLcd->ShowString(0,0,480,48,48,"operation canceled  ",0);
+		} else {
+			pLcd->ShowString(0,0,480,48,48,"purchase fail  ",0);
+		}
+	} else if(terminate) {
+		pLcd->ShowString(0,0,480,48,48,"operation canceled  ",0);
+	} else {
+		pLcd->ShowString(0,0,480,48,48,"invalid card  ",0);
+	}
+	System::DelayMs(1000);
 }
 
 void Ui::StartCancelNfcListener(){
@@ -91,4 +129,17 @@ void Ui::CancelCancelNfcListener(){
 	pLcd->SetTouchingInterrupt([&](libbase::k60::Gpi*,TouchScreenLcd*){});
 }
 
+void Ui::StartKillAwaitListener(const string& message){
+	terminate = false;
+	pLcd->ShowString(0,0,480,48,48,(char*)message.c_str(),0);
+	pLcd->ShowString(0,50,480,48,48,"tap screen to cancel",0);
+	pLcd->SetTouchingInterrupt([&](libbase::k60::Gpi*,TouchScreenLcd*){
+		pNfcMgr->Cancel();
+		pProtocol->CancelAwait();
+		terminate = true;
+	});
+}
 
+void Ui::StopKillAwaitListener(){
+	pLcd->SetTouchingInterrupt([&](libbase::k60::Gpi*,TouchScreenLcd*){});
+}

@@ -75,6 +75,8 @@ public:
 
 	bool FormatCard(uint16_t id, int16_t balance, std::string& name);
 
+	bool UpdateBalance(uint16_t id, int16_t balance, uint32_t time);
+
 	void Cancel(){
 		pNfc->Cancel();
 	}

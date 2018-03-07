@@ -32,6 +32,7 @@ uint8_t Comm::QueuePackage(Package pkg){
 }
 
 void Comm::SendPackageImmediate(const Package& pkg){
+	sent_package_count++;
 	const size_t len = 6 + pkg.data.size();
 	Byte* buf = new Byte[len];
 	Byte debug[100];

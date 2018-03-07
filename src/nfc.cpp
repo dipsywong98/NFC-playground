@@ -108,7 +108,7 @@ bool Nfc::ReadCard(){
 	memcpy(&last_tap, buf_, 4);
 
 	//return if this card is valid
-	return true;
+	return checksum == CalChecksum(m_card_id,m_balance,last_tap);
 }
 
 bool Nfc::ReadWholeCard(){
@@ -156,6 +156,24 @@ bool Nfc::FormatCard(uint16_t id, int16_t balance, std::string& name){
 	memcpy(temp, &cursor, 1);
 	pNfc->SendWrite(0xE0, temp);
 	return true;
+}
+
+bool Nfc::UpdateBalance(uint16_t id,int16_t balance, uint32_t time){
+	m_balance = balance;
+	last_tap = time;
+	Byte temp[4];
+	memset(temp, 0, 4);
+
+	memcpy(temp,&id,2);
+	memcpy(temp+2,&balance,2);
+	if(!pNfc->SendWrite(0x04,temp)) return false;
+
+	memcpy(temp, &time, 4);
+	pNfc->SendWrite(0xE1,temp);
+
+	uint32_t cs = CalChecksum(id,balance,time);
+	memcpy(temp, &cs, 4);
+	pNfc->SendWrite(0x0D, temp);
 }
 
 bool Nfc::ClearWholeCard(){

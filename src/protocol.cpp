@@ -79,3 +79,25 @@ void Protocol::PurchaseHandler(const Bluetooth::Package&pkg){
 	memcpy(&timestamp,&*pkg.data.begin(),4);
 	purchase_result = *pkg.data.end();
 }
+
+void Protocol::CancelAwait(){
+	cancel_await = true;
+}
+
+std::string Protocol::AwaitRequestIp(){
+	cancel_await = false;
+	while(!ip_ready&&!cancel_await);
+	return "";
+}
+
+vector<Product>& Protocol::AwaitRequestProducts(){
+	cancel_await = false;
+	while(!products_ready&&!cancel_await);
+	return products;
+}
+
+bool Protocol::AwaitRequestPurchase(){
+	cancel_await = false;
+	while(!purchase_ready&&!cancel_await);
+	return purchase_result && !cancel_await;
+}

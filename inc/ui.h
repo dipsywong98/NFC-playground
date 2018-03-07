@@ -16,6 +16,8 @@
 #include "libsc/k60/dk100.h"
 #include "libutil/touch_menu.h"
 
+#include "product.h"
+#include "protocol.h"
 #include "nfc.h"
 
 using libsc::System;
@@ -34,10 +36,14 @@ public:
 	TouchScreenLcd* pLcd;
 	Touch_Menu* pMenu;
 	Nfc* pNfcMgr;
+	Protocol* pProtocol;
+
+	string ip;
+	vector<Product> products;
 
 	bool terminate = false;
 
-	Ui(TouchScreenLcd* pLcd, Touch_Menu* pMenu, Nfc* pNfcMgr);
+	Ui(TouchScreenLcd* pLcd, Touch_Menu* pMenu, Nfc* pNfcMgr, Protocol* pProtocol);
 
 	void GoMainMenu();
 
@@ -47,9 +53,15 @@ public:
 
 	void ClearCardDisplay();
 
+	void PurchaseProductDisplay(const Product& product);
+
 	void StartCancelNfcListener();
 
 	void CancelCancelNfcListener();
 
+	//cancel Nfc and bluetooth await
+	void StartKillAwaitListener(const string& message);
+
+	void StopKillAwaitListener();
 };
 #endif /* INC_UI_H_ */

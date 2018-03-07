@@ -78,14 +78,16 @@ int main(){
 	Flash flash(flash_config);
 	Touch_Menu menu(&lcd,&flash);
 
-	Ui ui(&lcd,&menu,&nfcMgr);
-//	ui.GoMainMenu();
+
+	Protocol protocol;
+	protocol.RequestIp();
+
+	Ui ui(&lcd,&menu,&nfcMgr,&protocol);
+	ui.GoMainMenu();
 
 //	Bluetooth bt(1,1);
 //	bt.QueuePackage({Comm::PkgType::kRequestIp,0,{}});
 
-	Protocol protocol;
-	protocol.RequestIp();
 
 	while(1){
 		lcd.ShowNum(0,0,protocol.m_bt.GetQueueLength(),1,48);

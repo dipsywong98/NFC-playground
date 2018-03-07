@@ -8,6 +8,8 @@
 #ifndef INC_PROTOCOL_H_
 #define INC_PROTOCOL_H_
 
+#include <string>
+
 #include "bluetooth.h"
 #include "product.h"
 
@@ -51,10 +53,25 @@ public:
 	void ProductsHandler(const Bluetooth::Package& pkg);
 	void PurchaseHandler(const Bluetooth::Package& pkg);
 
-	void Await();
+	void CancelAwait();
+
+	/**
+	 * halt program until ip is ready and return requested ip
+	 */
+	std::string AwaitRequestIp();
+
+	/**
+	 * halt program until product list is ready and return requested list
+	 */
+	vector<Product>& AwaitRequestProducts();
+
+	/**
+	 * halt program until purchase result is ready and return request result
+	 */
+	bool AwaitRequestPurchase();
 
 private:
-
+	bool cancel_await = false;
 };
 
 
