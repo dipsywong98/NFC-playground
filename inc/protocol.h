@@ -9,6 +9,7 @@
 #define INC_PROTOCOL_H_
 
 #include "bluetooth.h"
+#include "product.h"
 
 class Protocol{
 public:
@@ -17,13 +18,18 @@ public:
 	Bluetooth m_bt;
 
 	uint8_t ip[4];
+	vector<Product> products;
+	uint8_t products_count=0;
+	uint32_t timestamp = 0;
+	bool purchase_result = 0;
 
 	bool ip_ready = false;
 	bool products_ready = false;
-	bool purchaseresult_ready = false;
+	bool purchase_ready = false;
 
-	uint8_t products_count=0;
-
+	bool waiting_ip = false;
+	bool waiting_products = false;
+	bool waiting_purchase = false;
 
 	Protocol():m_bt(0,1){
 		memset(ip,0,4);
@@ -36,9 +42,9 @@ public:
 	 * Return 0 means submit request fail,
 	 * probably previous same request have not received
 	 */
-	void RequestIp();
-	void RequestProducts();
-	void Purchase();
+	bool RequestIp();
+	bool RequestProducts();
+	bool RequestPurchase(uint16_t card_id, uint8_t product_id, uint32_t checksum);
 
 	void Handler(const Bluetooth::Package& pkg);
 	void IpHandler(const Bluetooth::Package& pkg);

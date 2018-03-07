@@ -92,8 +92,9 @@ int main(){
 		char buf[14];
 		sprintf(buf,"%d.%d.%d.%d  ",protocol.ip[0],protocol.ip[1],protocol.ip[2],protocol.ip[3]);
 		lcd.ShowString(0,50,480,48,48,buf,0);
-
-		lcd.ShowNum(700,0,System::Time()/100%100,2,48);
+		lcd.ShowNum(0,100,protocol.m_bt.receive_package_count,4,48);
+		lcd.ShowNum(0,150,protocol.m_bt.delete_package_count,4,48);
+		lcd.ShowNum(0,700,System::Time()/100%100,2,48);
 	}
 
 //	Byte buf[4] = {1,2,3,4};
