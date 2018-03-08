@@ -9,9 +9,12 @@
 #define INC_PROTOCOL_H_
 
 #include <string>
+#include "libsc/k60/touchscreen_lcd.h"
 
 #include "bluetooth.h"
 #include "product.h"
+
+using libsc::k60::TouchScreenLcd;
 
 class Protocol{
 public:
@@ -23,7 +26,7 @@ public:
 	vector<Product> products;
 	uint8_t products_count=0;
 	uint32_t timestamp = 0;
-	bool purchase_result = 0;
+//	bool purchase_result = 0;
 
 	bool ip_ready = false;
 	bool products_ready = false;
@@ -46,7 +49,7 @@ public:
 	 */
 	bool RequestIp();
 	bool RequestProducts();
-	bool RequestPurchase(uint16_t card_id, uint8_t product_id, uint32_t checksum);
+	bool RequestPurchase(uint16_t card_id, uint8_t product_id, uint16_t amount_deducted, uint32_t checksum);
 
 	void Handler(const Bluetooth::Package& pkg);
 	void IpHandler(const Bluetooth::Package& pkg);
@@ -58,17 +61,17 @@ public:
 	/**
 	 * halt program until ip is ready and return requested ip
 	 */
-	std::string AwaitRequestIp();
+	std::string AwaitRequestIp(TouchScreenLcd* pLcd);
 
 	/**
 	 * halt program until product list is ready and return requested list
 	 */
-	vector<Product>& AwaitRequestProducts();
+	vector<Product>& AwaitRequestProducts(TouchScreenLcd* pLcd);
 
 	/**
-	 * halt program until purchase result is ready and return request result
+	 * halt program until purchase sent to server and return timestamp
 	 */
-	bool AwaitRequestPurchase();
+	uint32_t AwaitRequestPurchase(TouchScreenLcd* pLcd);
 
 private:
 	bool cancel_await = false;

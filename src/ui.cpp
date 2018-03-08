@@ -33,10 +33,10 @@ pLcd(pLcd),pMenu(pMenu),pNfcMgr(pNfcMgr),pProtocol(pProtocol)
 
 	pLcd->ShowString(0,0,480,50,48,"crawling data...",0);
 
-	ip = pProtocol->AwaitRequestIp();
+	ip = pProtocol->AwaitRequestIp(pLcd);
 	pLcd->ShowString(0,50,480,50,48,(char*)("ip"+ip).c_str(),0);
 
-	products = pProtocol->AwaitRequestProducts();
+	products = pProtocol->AwaitRequestProducts(pLcd);
 	for(const Product& product: products){
 		pMenu->AddItem((char*)product.name,[&](){this->PurchaseProductDisplay(product);},(libutil::Touch_Menu::Menu*)productMenu);
 	}
@@ -92,29 +92,49 @@ void Ui::ClearCardDisplay(){
 }
 
 void Ui::PurchaseProductDisplay(const Product& product){
-	StartKillAwaitListener("Tap card, Touch screen to cancel");
+	char message[20] = "tap card buy";
+	strcat(message,product.name);
+	StartKillAwaitListener(message);
 	if(pNfcMgr->ReadCard()){
 		const uint16_t card_id = pNfcMgr->m_card_id;
 		int16_t balance = pNfcMgr->m_balance;
 		uint32_t checksum = pNfcMgr->checksum;
-		pProtocol->RequestPurchase(card_id,product.id,checksum);
-		if(pProtocol->AwaitRequestPurchase()){
-			uint32_t time = pProtocol->timestamp;
-			balance -= product.price;
-			if(pNfcMgr->UpdateBalance(card_id,balance,time)){
-				pLcd->ShowString(0,0,480,48,48,"purchase",0);
+		if(balance>=product.price){
+			pProtocol->RequestPurchase(card_id,product.id,product.price,checksum);
+			uint32_t time = pProtocol->AwaitRequestPurchase(pLcd);
+			if(!terminate){
+				balance -= product.price;
+				if(pNfcMgr->UpdateBalance(card_id,balance,time)){
+					pLcd->ShowString(0,0,480,48,48,"purchase success    ",0);
+					char buf[20];
+					sprintf(buf,"balance %d    ",balance);
+					pLcd->ShowString(0,50,480,48,48,buf,0);
+					System::DelayMs(3000);
+				} else {
+					pLcd->ShowString(0,0,480,48,48,"update balance fail",0);
+					System::DelayMs(2000);
+				}
+			} else {
+				pLcd->ShowString(0,0,480,48,48,"operation canceled  ",0);
+				System::DelayMs(1000);
 			}
-		} else if (terminate){
-			pLcd->ShowString(0,0,480,48,48,"operation canceled  ",0);
 		} else {
-			pLcd->ShowString(0,0,480,48,48,"purchase fail  ",0);
+			pLcd->ShowString(0,0,480,48,48,"not enough budget  ",0);
+			char buf[20];
+			sprintf(buf,"required %d",product.price);
+			pLcd->ShowString(0,50,480,48,48,buf,0);
+			sprintf(buf,"you have %d",balance);
+			pLcd->ShowString(0,100,480,48,48,buf,0);
+			System::DelayMs(3000);
 		}
 	} else if(terminate) {
 		pLcd->ShowString(0,0,480,48,48,"operation canceled  ",0);
+		System::DelayMs(1000);
 	} else {
 		pLcd->ShowString(0,0,480,48,48,"invalid card  ",0);
+		System::DelayMs(2000);
 	}
-	System::DelayMs(1000);
+	StopKillAwaitListener();
 }
 
 void Ui::StartCancelNfcListener(){

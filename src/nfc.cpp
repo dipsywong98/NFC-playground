@@ -108,7 +108,7 @@ bool Nfc::ReadCard(){
 	memcpy(&last_tap, buf_, 4);
 
 	//return if this card is valid
-	return checksum == CalChecksum(m_card_id,m_balance,last_tap);
+	return true;//checksum == CalChecksum(m_card_id,m_balance,last_tap);
 }
 
 bool Nfc::ReadWholeCard(){
@@ -174,6 +174,7 @@ bool Nfc::UpdateBalance(uint16_t id,int16_t balance, uint32_t time){
 	uint32_t cs = CalChecksum(id,balance,time);
 	memcpy(temp, &cs, 4);
 	pNfc->SendWrite(0x0D, temp);
+	return true;
 }
 
 bool Nfc::ClearWholeCard(){

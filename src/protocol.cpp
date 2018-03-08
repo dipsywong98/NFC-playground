@@ -23,13 +23,14 @@ bool Protocol::RequestProducts(){
 	return 1;
 }
 
-bool Protocol::RequestPurchase(uint16_t card_id, uint8_t product_id, uint32_t checksum){
+bool Protocol::RequestPurchase(uint16_t card_id, uint8_t product_id, uint16_t amount_deducted, uint32_t checksum){
 	purchase_ready = false;
 	waiting_purchase = true;
-	vector<Byte> data(7);
+	vector<Byte> data(9);
 	memcpy(&*data.begin(),&card_id,2);
 	memcpy(&*data.begin()+2,&product_id,1);
-	memcpy(&*data.begin()+3,&checksum,4);
+	memcpy(&*data.begin()+3,&amount_deducted,2);
+	memcpy(&*data.begin()+5,&checksum,4);
 	m_bt.QueuePackage({Bluetooth::PkgType::kPurchase,0,data});
 	return 1;
 }
@@ -62,9 +63,12 @@ void Protocol::ProductsHandler(const Bluetooth::Package& pkg){
 		products_count = pkg.data[1];
 	}
 	else{
+		char name[33];
 		Product product = {id};
-		memcpy(product.name,&*pkg.data.begin()+1,pkg.data.size()-3);
+		memset(product.name,'\0',33);
+		memcpy(name,&*pkg.data.begin()+1,pkg.data.size()-3);
 		memcpy(&product.price,&*pkg.data.end()-2,2);
+		sprintf(product.name,"$%d:%s",product.price,name);
 		products.push_back(product);
 	}
 	if(products.size() == products_count){
@@ -77,27 +81,37 @@ void Protocol::PurchaseHandler(const Bluetooth::Package&pkg){
 	purchase_ready = true;
 	waiting_purchase = false;
 	memcpy(&timestamp,&*pkg.data.begin(),4);
-	purchase_result = *pkg.data.end();
+//	purchase_result = *pkg.data.end();
 }
 
 void Protocol::CancelAwait(){
 	cancel_await = true;
 }
 
-std::string Protocol::AwaitRequestIp(){
+std::string Protocol::AwaitRequestIp(TouchScreenLcd* pLcd){
 	cancel_await = false;
-	while(!ip_ready&&!cancel_await);
-	return "";
+	while(!ip_ready&&!cancel_await){
+		pLcd->ShowNum(0,700,System::Time()/100%100,2,48);
+	}
+	char buff[16];
+	sprintf(buff,"%d.%d.%d.%d",ip[0],ip[1],ip[2],ip[3]);
+	return buff;
 }
 
-vector<Product>& Protocol::AwaitRequestProducts(){
+vector<Product>& Protocol::AwaitRequestProducts(TouchScreenLcd* pLcd){
 	cancel_await = false;
-	while(!products_ready&&!cancel_await);
+	while(!products_ready&&!cancel_await){
+		pLcd->ShowNum(0,600,products_count,4,48);
+		pLcd->ShowNum(0,650,products.size(),4,48);
+		pLcd->ShowNum(0,700,System::Time()/100%100,2,48);
+	}
 	return products;
 }
 
-bool Protocol::AwaitRequestPurchase(){
+uint32_t Protocol::AwaitRequestPurchase(TouchScreenLcd* pLcd){
 	cancel_await = false;
-	while(!purchase_ready&&!cancel_await);
-	return purchase_result && !cancel_await;
+	while(!purchase_ready&&!cancel_await){
+		pLcd->ShowNum(0,700,System::Time()/100%100,2,48);
+	}
+	return timestamp;
 }
