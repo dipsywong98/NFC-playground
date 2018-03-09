@@ -35,7 +35,7 @@ public:
 	char m_name[34];
 	char temp[4];
 
-	uint32_t last_tap = 0, checksum = 0;
+	uint32_t last_tap = 0, checksum = 0, calChecksum = 0;
 
 	Nfc(Dk100 *pNfc);
 	inline uint32_t CalChecksum(uint16_t id, int16_t balance, uint32_t timestamp);

@@ -50,7 +50,12 @@ void Ui::FormatCardDisplay(){
 	StartCancelNfcListener();
 	if(pNfcMgr->FormatCard(temp_card_id,temp_balance,temp_name)){
 		pLcd->ShowString(0,0,480,48,48,"successfully formatted",0);
-		System::DelayMs(1000);
+		char buf[20];
+		sprintf(buf,"cs: %d",pNfcMgr->checksum);
+		pLcd->ShowString(0,50,480,48,48,buf,0);
+		while(!terminate){
+
+		}
 	} else {
 		pLcd->ShowString(0,0,480,48,48,"operation canceled  ",0);
 		System::DelayMs(1000);
@@ -69,11 +74,20 @@ void Ui::ReadCardDisplay(){
 		pLcd->ShowString(0,100,480,48,48,buf,0);
 		sprintf(buf,"name: %s;",pNfcMgr->m_name);
 		pLcd->ShowString(0,150,480,48,48,buf,0);
+		sprintf(buf,"last tap: %d;",pNfcMgr->last_tap);
+		pLcd->ShowString(0,200,480,48,48,buf,0);
+		sprintf(buf,"cs: %d;",pNfcMgr->checksum);
+		pLcd->ShowString(0,250,480,48,48,buf,0);
+		sprintf(buf,"CS: %d;",pNfcMgr->calChecksum);
+		pLcd->ShowString(0,300,480,48,48,buf,0);
 		while(!terminate){
 			pLcd->ShowNum(0,700,System::Time()/100%10,1,48);
 		}
-	} else {
+	} else if(terminate) {
 		pLcd->ShowString(0,0,480,48,48,"operation canceled  ",0);
+		System::DelayMs(1000);
+	} else {
+		pLcd->ShowString(0,0,480,48,48,"invalid",0);
 		System::DelayMs(1000);
 	}
 	CancelCancelNfcListener();
@@ -138,6 +152,7 @@ void Ui::PurchaseProductDisplay(const Product& product){
 }
 
 void Ui::StartCancelNfcListener(){
+	terminate = false;
 	pLcd->ShowString(0,0,480,48,48,"Touch to cancel",0);
 	pLcd->SetTouchingInterrupt([&](libbase::k60::Gpi*,TouchScreenLcd*){
 		pNfcMgr->Cancel();

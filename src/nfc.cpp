@@ -28,15 +28,6 @@ using std::vector;
 using libsc::k60::TouchScreenLcd;
 using libutil::Touch_Menu;
 
-//struct Sectors{
-//	static constexpr Byte kIdBalance = 0x04;
-//	static constexpr Byte kName = 0x05;
-//	static constexpr Byte kChecksum = 0x0D;
-//	static constexpr Byte kHistory = 0x0E;
-//	static constexpr Byte kCursor = 0xE0;
-//	static constexpr Byte kLastTap = 0xE1;
-//};
-
 inline uint32_t Nfc::CalChecksum(uint16_t id, int16_t balance, uint32_t timestamp){
 	return (B+(A*((id+balance+timestamp)%C))%C)%C;
 }
@@ -59,16 +50,6 @@ bool Nfc::SendWriteMulti(const Byte& sector, const Byte* data, const uint8_t& le
 			return false;
 		}
 	}
-
-//	memcpy(buf,data,4);
-//	pNfc->SendWrite(0x05,buf);
-//
-//	memcpy(buf,data+4,4);
-//	pNfc->SendWrite(0x06,buf);
-//
-//	memcpy(buf,data+8,4);
-//	pNfc->SendWrite(0x07,buf);
-
 	return true;
 }
 
@@ -78,15 +59,6 @@ bool Nfc::SendReadMulti(const Byte& sector, Byte* data, const uint8_t& len){
 			return false;
 		}
 	}
-//	pNfc->SendRead(0x05);
-//	memcpy(data,pNfc->GetData(),4);
-//
-//	pNfc->SendRead(0x06);
-//	memcpy(data+4,pNfc->GetData(),4);
-//
-//	pNfc->SendRead(0x07);
-//	memcpy(data+8,pNfc->GetData(),4);
-
 	return true;
 }
 
@@ -108,7 +80,8 @@ bool Nfc::ReadCard(){
 	memcpy(&last_tap, buf_, 4);
 
 	//return if this card is valid
-	return true;//checksum == CalChecksum(m_card_id,m_balance,last_tap);
+	calChecksum =  CalChecksum(m_card_id,m_balance,last_tap);
+	return checksum == calChecksum;//checksum == CalChecksum(m_card_id,m_balance,last_tap);
 }
 
 bool Nfc::ReadWholeCard(){
@@ -118,8 +91,6 @@ bool Nfc::ReadWholeCard(){
 }
 
 bool Nfc::ReadName(){
-//	pNfc->SendRead(0x05);
-//	memcpy(temp,pNfc->GetData(),4);
 	if(SendReadMulti(0x05,(Byte*)m_name,8)){
 		return true;
 	} else {
@@ -130,10 +101,6 @@ bool Nfc::ReadName(){
 bool Nfc::FormatCard(uint16_t id, int16_t balance, std::string& name){
 	Byte temp[4];
 	memset(temp, 0, 4);
-
-//	for(uint8_t i = 0x04; i<=0xE1; i++){
-//		if(!pNfc->SendWrite(i,temp))return false;
-//	}
 
 	memcpy(temp,&id,2);
 	memcpy(temp+2,&balance,2);
@@ -147,8 +114,8 @@ bool Nfc::FormatCard(uint16_t id, int16_t balance, std::string& name){
 	memcpy(temp, &time, 4);
 	pNfc->SendWrite(0xE1,temp);
 
-	uint32_t cs = CalChecksum(id,balance,time);
-	memcpy(temp, &cs, 4);
+	checksum = CalChecksum(id,balance,time);
+	memcpy(temp, &checksum, 4);
 	pNfc->SendWrite(0x0D, temp);
 
 	uint8_t cursor = 0;
@@ -171,8 +138,8 @@ bool Nfc::UpdateBalance(uint16_t id,int16_t balance, uint32_t time){
 	memcpy(temp, &time, 4);
 	pNfc->SendWrite(0xE1,temp);
 
-	uint32_t cs = CalChecksum(id,balance,time);
-	memcpy(temp, &cs, 4);
+	checksum = CalChecksum(id,balance,time);
+	memcpy(temp, &checksum, 4);
 	pNfc->SendWrite(0x0D, temp);
 	return true;
 }
