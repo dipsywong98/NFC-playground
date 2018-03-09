@@ -38,7 +38,7 @@ pLcd(pLcd),pMenu(pMenu),pNfcMgr(pNfcMgr),pProtocol(pProtocol)
 
 	products = pProtocol->AwaitRequestProducts(pLcd);
 	for(const Product& product: products){
-		pMenu->AddItem((char*)product.name,[&](){this->PurchaseProductDisplay(product);},(libutil::Touch_Menu::Menu*)productMenu);
+		pMenu->AddItem((char*)product.showText,[&](){this->PurchaseProductDisplay(product);},(libutil::Touch_Menu::Menu*)productMenu);
 	}
 }
 
@@ -51,11 +51,11 @@ void Ui::FormatCardDisplay(){
 	if(pNfcMgr->FormatCard(temp_card_id,temp_balance,temp_name)){
 		pLcd->ShowString(0,0,480,48,48,"successfully formatted",0);
 		char buf[20];
-		sprintf(buf,"cs: %d",pNfcMgr->checksum);
-		pLcd->ShowString(0,50,480,48,48,buf,0);
-		while(!terminate){
-
-		}
+//		sprintf(buf,"cs: %d",pNfcMgr->checksum);
+//		pLcd->ShowString(0,50,480,48,48,buf,0);
+//		while(!terminate){
+//
+//		}
 	} else {
 		pLcd->ShowString(0,0,480,48,48,"operation canceled  ",0);
 		System::DelayMs(1000);
@@ -65,7 +65,7 @@ void Ui::FormatCardDisplay(){
 
 void Ui::ReadCardDisplay(){
 	StartCancelNfcListener();
-	if(pNfcMgr->ReadWholeCard()){
+	if(pNfcMgr->ReadWholeCard(pLcd)){
 		pLcd->ShowString(0,0,480,48,48,"Record (Tap to leave):",0);
 		char buf[20];
 		sprintf(buf,"id: %d",pNfcMgr->m_card_id);
@@ -76,12 +76,17 @@ void Ui::ReadCardDisplay(){
 		pLcd->ShowString(0,150,480,48,48,buf,0);
 		sprintf(buf,"last tap: %d;",pNfcMgr->last_tap);
 		pLcd->ShowString(0,200,480,48,48,buf,0);
-		sprintf(buf,"cs: %d;",pNfcMgr->checksum);
-		pLcd->ShowString(0,250,480,48,48,buf,0);
-		sprintf(buf,"CS: %d;",pNfcMgr->calChecksum);
-		pLcd->ShowString(0,300,480,48,48,buf,0);
+//		sprintf(buf,"cs: %d;",pNfcMgr->checksum);
+//		pLcd->ShowString(0,250,480,48,48,buf,0);
+//		sprintf(buf,"CS: %d;",pNfcMgr->calChecksum);
+//		pLcd->ShowString(0,300,480,48,48,buf,0);
+		for(int i = 0; i<pNfcMgr->purchases.size();i++){
+			const Purchase& purchase = pNfcMgr->purchases[i];
+			sprintf(buf,"%d,$%d:%s",purchase.timestamp,purchase.product.price,purchase.product.name);
+			pLcd->ShowString(0,250+i*50,480,48,48,buf,0);
+		}
 		while(!terminate){
-			pLcd->ShowNum(0,700,System::Time()/100%10,1,48);
+			pLcd->ShowNum(0,750,System::Time()/100%10,1,48);
 		}
 	} else if(terminate) {
 		pLcd->ShowString(0,0,480,48,48,"operation canceled  ",0);
@@ -95,7 +100,7 @@ void Ui::ReadCardDisplay(){
 
 void Ui::ClearCardDisplay(){
 	StartCancelNfcListener();
-	if(pNfcMgr->ClearWholeCard()){
+	if(pNfcMgr->ClearWholeCard(pLcd)){
 		pLcd->ShowString(0,0,480,48,48,"successfully cleared",0);
 		System::DelayMs(1000);
 	} else {
@@ -119,6 +124,7 @@ void Ui::PurchaseProductDisplay(const Product& product){
 			if(!terminate){
 				balance -= product.price;
 				if(pNfcMgr->UpdateBalance(card_id,balance,time)){
+					pNfcMgr->AddPurchaseHistory(product,time);
 					pLcd->ShowString(0,0,480,48,48,"purchase success    ",0);
 					char buf[20];
 					sprintf(buf,"balance %d    ",balance);

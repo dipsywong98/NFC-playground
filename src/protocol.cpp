@@ -67,9 +67,10 @@ void Protocol::ProductsHandler(const Bluetooth::Package& pkg){
 		Product product;
 		product.id = id;
 		memset(product.name,'\0',33);
-		memcpy(name,&*pkg.data.begin()+1,pkg.data.size()-3);
+		memset(product.showText,'\0',33);
+		memcpy(product.name,&*pkg.data.begin()+1,pkg.data.size()-3);
 		memcpy(&product.price,&*pkg.data.end()-2,2);
-		sprintf(product.name,"$%d:%s",product.price,name);
+		sprintf(product.showText,"$%d:%s",product.price,product.name);
 		products.push_back(product);
 	}
 	if(products.size() == products_count){
@@ -91,10 +92,10 @@ void Protocol::CancelAwait(){
 
 std::string Protocol::AwaitRequestIp(TouchScreenLcd* pLcd){
 	cancel_await = false;
-//	while(!ip_ready&&!cancel_await){
-//		pLcd->ShowNum(0,700,System::Time()/100%100,2,48);
-//	}
-	ip[0]=10,ip[1]=89,ip[2]=220,ip[3]=86;
+	while(!ip_ready&&!cancel_await){
+		pLcd->ShowNum(0,700,System::Time()/100%100,2,48);
+	}
+//	ip[0]=10,ip[1]=89,ip[2]=220,ip[3]=86;
 	char buff[16];
 	sprintf(buff,"%d.%d.%d.%d",ip[0],ip[1],ip[2],ip[3]);
 	return buff;
@@ -102,22 +103,22 @@ std::string Protocol::AwaitRequestIp(TouchScreenLcd* pLcd){
 
 vector<Product>& Protocol::AwaitRequestProducts(TouchScreenLcd* pLcd){
 	cancel_await = false;
-//	while(!products_ready&&!cancel_await){
-//		pLcd->ShowNum(0,600,products_count,4,48);
-//		pLcd->ShowNum(0,650,products.size(),4,48);
-//		pLcd->ShowNum(0,700,System::Time()/100%100,2,48);
-//	}
-	products.emplace_back(1,"$2:oero",2);
-	products.emplace_back(2,"$3:Chips",3);
-	products.emplace_back(3,"$4:VLT",4);
+	while(!products_ready&&!cancel_await){
+		pLcd->ShowNum(0,600,products_count,4,48);
+		pLcd->ShowNum(0,650,products.size(),4,48);
+		pLcd->ShowNum(0,700,System::Time()/100%100,2,48);
+	}
+//	products.emplace_back(1,"$2:oero",2);
+//	products.emplace_back(2,"$3:Chips",3);
+//	products.emplace_back(3,"$4:VLT",4);
 	return products;
 }
 
 uint32_t Protocol::AwaitRequestPurchase(TouchScreenLcd* pLcd){
 	cancel_await = false;
-//	while(!purchase_ready&&!cancel_await){
-//		pLcd->ShowNum(0,700,System::Time()/100%100,2,48);
-//	}
-	timestamp = 1520588733;
+	while(!purchase_ready&&!cancel_await){
+		pLcd->ShowNum(0,700,System::Time()/100%100,2,48);
+	}
+//	timestamp = 1520588733;
 	return timestamp;
 }

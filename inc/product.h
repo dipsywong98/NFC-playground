@@ -11,6 +11,7 @@
 struct Product{
 	uint8_t id;
 	char name[33];
+	char showText[33];
 	uint16_t price;
 	Product(uint8_t id, const char name[], uint16_t price):id(id),price(price){strcpy(this->name,name);}
 	Product(){}

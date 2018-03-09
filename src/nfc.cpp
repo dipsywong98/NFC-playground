@@ -84,9 +84,23 @@ bool Nfc::ReadCard(){
 	return checksum == calChecksum;//checksum == CalChecksum(m_card_id,m_balance,last_tap);
 }
 
-bool Nfc::ReadWholeCard(){
+bool Nfc::ReadWholeCard(TouchScreenLcd* pLcd){
 	if(!ReadCard())return false;
+	pLcd->ShowNum(0,700,1,48,0);
 	if(!ReadName())return false;
+	pLcd->ShowNum(0,700,2,48,0);
+	if(!ReadPurchaseHistories(pLcd))return false;
+//	purchases.clear();
+//	pNfc->SendRead(0xE0);
+//	uint8_t headsector;
+//	Byte buf[45];
+//	memcpy(&headsector,pNfc->GetData(),1);
+//	SendReadMulti(14+10*headsector,buf,10);
+//	Purchase purchase;
+//	memcpy(&purchase.timestamp,buf,4);
+//	memcpy(&purchase.product.price,buf+4,2);
+//	memcpy(&purchase.product.name,buf+8,32);
+//	purchases.push_back(purchase);
 	return true;
 }
 
@@ -118,7 +132,7 @@ bool Nfc::FormatCard(uint16_t id, int16_t balance, std::string& name){
 	memcpy(temp, &checksum, 4);
 	pNfc->SendWrite(0x0D, temp);
 
-	uint8_t cursor = 0;
+	uint8_t cursor = 9;
 	memset(temp, 0, 4);
 	memcpy(temp, &cursor, 1);
 	pNfc->SendWrite(0xE0, temp);
@@ -127,7 +141,7 @@ bool Nfc::FormatCard(uint16_t id, int16_t balance, std::string& name){
 
 bool Nfc::UpdateBalance(uint16_t id,int16_t balance, uint32_t time){
 	m_balance = balance;
-	last_tap = time;
+	last_tap = std::max(time,last_tap);
 	Byte temp[4];
 	memset(temp, 0, 4);
 
@@ -144,11 +158,58 @@ bool Nfc::UpdateBalance(uint16_t id,int16_t balance, uint32_t time){
 	return true;
 }
 
-bool Nfc::ClearWholeCard(){
+bool Nfc::ClearWholeCard(TouchScreenLcd* pLcd){
 	Byte buf[4] = {0,0,0,0};
 	for(Byte i = 0x04; i<=0xE1; i++){
 		if(!pNfc->SendWrite(i,buf))return false;
+		char buf[20];
+		sprintf(buf,"%d/%d",i-0x04,0xE1-0x04);
+		pLcd->ShowString(0,500,480,50,48,buf,0);
 	}
+	return true;
+}
+
+bool Nfc::AddPurchaseHistory(const Product& product, uint32_t time){
+	if(!pNfc->SendRead(0xE0)) return false;
+	uint8_t cursor = 0;
+	memcpy(&cursor, pNfc->GetData(),1);
+	Byte buf[40];
+	memcpy(buf,&time,4);
+	memcpy(buf+4,&product.price,2);
+	memcpy(buf+8,product.name,32);
+	if(!SendWriteMulti(14+ cursor*10,buf,10)) return false;
+	cursor = (cursor+1)%10;
+	memcpy(buf,&cursor,1);
+	pNfc->SendWrite(0xE0,buf);
+	return true;
+}
+
+bool Nfc::ReadPurchaseHistories(TouchScreenLcd* pLcd){
+	purchases.clear();
+	for(uint8_t s_id = 0x0E; s_id<0xA7; s_id+=10){
+		Byte buf[40];
+		memset(buf,'\0',40);
+		if(SendReadMulti(s_id,buf,10)){
+			pLcd->ShowNum(100,700,(s_id-0x0E)/100,48,0);
+			Purchase purchase;
+			memcpy(&purchase.timestamp,buf,4);
+			if(purchase.timestamp && purchase.timestamp>20588733 && purchase.timestamp == purchase.timestamp){
+				memcpy(&purchase.product.price,buf+4,2);
+				memcpy(&purchase.product.name,buf+8,32);
+				purchases.push_back(purchase);
+			}
+		} else {
+			return false;
+		}
+	}
+	Purchase d;
+	for(int i=0; i<10; i++){
+		d = purchases[0];
+	}
+//	std::sort(purchases.begin(),purchases.end(),[](const Purchase& a, const Purchase&b){
+//		return a.timestamp<b.timestamp;
+//	});
+	Byte debug;
 	return true;
 }
 

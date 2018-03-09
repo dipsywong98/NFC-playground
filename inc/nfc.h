@@ -14,11 +14,15 @@
 #include <libsc/system.h>
 #include <libsc/led.h>
 #include <vector>
+#include <algorithm>
 
 #include "libbase/k60/flash.h"
 #include "libsc/k60/touchscreen_lcd.h"
 #include "libsc/k60/dk100.h"
 #include "libutil/touch_menu.h"
+
+#include "purchase.h"
+#include "product.h"
 
 using libsc::k60::Dk100;
 
@@ -29,11 +33,11 @@ using libsc::k60::Dk100;
 class Nfc{
 public:
 
-
 	uint16_t m_card_id = 0;
 	int16_t m_balance = 0;
 	char m_name[34];
 	char temp[4];
+	vector<Purchase> purchases;
 
 	uint32_t last_tap = 0, checksum = 0, calChecksum = 0;
 
@@ -69,7 +73,7 @@ public:
 	/**
 	 * Read all sectors of the card
 	 */
-	bool ReadWholeCard();
+	bool ReadWholeCard(TouchScreenLcd* pLcd);
 
 	bool ReadName();
 
@@ -81,7 +85,11 @@ public:
 		pNfc->Cancel();
 	}
 
-	bool ClearWholeCard();
+	bool ClearWholeCard(TouchScreenLcd* pLcd);
+
+	bool AddPurchaseHistory(const Product& product, uint32_t time);
+
+	bool ReadPurchaseHistories(TouchScreenLcd* pLcd);
 
 private:
 
@@ -93,7 +101,6 @@ private:
 
 	uint32_t A = 4219, B = 97729, C = 543217;
 	uint8_t last_sector = 0x0E;
-
 };
 
 #endif /* INC_NFC_H_ */

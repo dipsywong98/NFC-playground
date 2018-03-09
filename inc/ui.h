@@ -16,6 +16,7 @@
 #include "libsc/k60/dk100.h"
 #include "libutil/touch_menu.h"
 
+#include "purchase.h"
 #include "product.h"
 #include "protocol.h"
 #include "nfc.h"
