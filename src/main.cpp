@@ -10,7 +10,6 @@
 #include <cstring>
 #include <libbase/k60/mcg.h>
 #include <libsc/system.h>
-#include <libsc/led.h>
 #include <vector>
 
 #include "libbase/k60/flash.h"
@@ -59,6 +58,8 @@ int main(){
 		return pNfc->Listener(buff,size);
 	};
 	Dk100 nfc(config);
+
+
 	pNfc = &nfc;
 	nfc.SetReadSuccessHandler([&](const Byte& sector, const Byte *data){
 		a=data[0];
@@ -72,46 +73,14 @@ int main(){
 	lcd.SetTouchingInterrupt([&](Gpi*,TouchScreenLcd* pLcd){
 		yo++;
 	});
-	TouchKeyboard keyboard(&lcd);
 
-	Flash::Config flash_config;
-	Flash flash(flash_config);
-	Touch_Menu menu(&lcd,&flash);
-
-
+	Touch_Menu menu(&lcd);
 	Protocol protocol;
-	protocol.RequestIp();
 
 	Ui ui(&lcd,&menu,&nfcMgr,&protocol);
 	ui.GoMainMenu();
 
-//	Bluetooth bt(1,1);
-//	bt.QueuePackage({Comm::PkgType::kRequestIp,0,{}});
-
-
 	while(1){
-		lcd.ShowNum(0,0,protocol.m_bt.GetQueueLength(),1,48);
-		char buf[14];
-		sprintf(buf,"%d.%d.%d.%d  ",protocol.ip[0],protocol.ip[1],protocol.ip[2],protocol.ip[3]);
-		lcd.ShowString(0,50,480,48,48,buf,0);
-		lcd.ShowNum(0,100,protocol.m_bt.receive_package_count,4,48);
-		lcd.ShowNum(0,150,protocol.m_bt.delete_package_count,4,48);
-		lcd.ShowNum(0,700,System::Time()/100%100,2,48);
-	}
-
-//	Byte buf[4] = {1,2,3,4};
-//	pNfc->SendWrite(0x04,buf);
-//	pNfc->SendRead(0x04);
-//	Byte* y = pNfc->GetData();
-//	lcd.ShowNum(0,250,y[0],4,48);
-//	lcd.ShowNum(0,300,y[1],4,48);
-//	lcd.ShowNum(0,350,y[2],4,48);
-//	lcd.ShowNum(0,400,y[3],4,48);
-//	memcpy(buf,&know,4);
-//	know = know + 0;
-
-	while(1){
-//		nfc.SendStr("A");
 		lcd.ShowNum(0,0,yo,4,48);
 		lcd.ShowNum(0,50,lcd.touch_status,1,48);
 		lcd.ShowNum(0,100,System::Time(),4,48);

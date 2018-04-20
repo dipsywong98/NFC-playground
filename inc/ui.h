@@ -52,6 +52,8 @@ public:
 
 	void ReadCardDisplay();
 
+	void ReadCardBalanceDisplay();
+
 	void ClearCardDisplay();
 
 	void PurchaseProductDisplay(const Product& product);
