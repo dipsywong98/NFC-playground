@@ -222,7 +222,8 @@ void Ui::StopKillAwaitListener(){
 
 void Ui::Auth(){
 	TouchKeyboard kb(pLcd);
-	if(kb.ShowKeyboard()=="") {
+	kb.SetPasswordMode(1);
+	if(kb.ShowKeyboard()=="BoyGod Leslie") {
 		pSecretMenu->EnterMenu(&pSecretMenu->main_menu,0,0,480,800,48);
 	}
 }
