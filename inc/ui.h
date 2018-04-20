@@ -36,6 +36,7 @@ public:
 	std::string temp_name = "YOO";
 	TouchScreenLcd* pLcd;
 	Touch_Menu* pMenu;
+	Touch_Menu* pSecretMenu;
 	Nfc* pNfcMgr;
 	Protocol* pProtocol;
 
@@ -44,7 +45,7 @@ public:
 
 	bool terminate = false;
 
-	Ui(TouchScreenLcd* pLcd, Touch_Menu* pMenu, Nfc* pNfcMgr, Protocol* pProtocol);
+	Ui(TouchScreenLcd* pLcd, Touch_Menu* pMenu, Nfc* pNfcMgr, Protocol* pProtocol, Touch_Menu* pSecretMenu);
 
 	void GoMainMenu();
 
@@ -66,5 +67,7 @@ public:
 	void StartKillAwaitListener(const string& message);
 
 	void StopKillAwaitListener();
+
+	void Auth();
 };
 #endif /* INC_UI_H_ */

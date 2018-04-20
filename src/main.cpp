@@ -75,9 +75,10 @@ int main(){
 	});
 
 	Touch_Menu menu(&lcd);
+	Touch_Menu secretmenu(&lcd);
 	Protocol protocol;
 
-	Ui ui(&lcd,&menu,&nfcMgr,&protocol);
+	Ui ui(&lcd,&menu,&nfcMgr,&protocol,&secretmenu);
 	ui.GoMainMenu();
 
 	while(1){

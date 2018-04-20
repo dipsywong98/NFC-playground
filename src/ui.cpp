@@ -7,8 +7,8 @@
 
 #include "ui.h"
 
-Ui::Ui(TouchScreenLcd* pLcd, Touch_Menu* pMenu, Nfc* pNfcMgr, Protocol* pProtocol):
-pLcd(pLcd),pMenu(pMenu),pNfcMgr(pNfcMgr),pProtocol(pProtocol)
+Ui::Ui(TouchScreenLcd* pLcd, Touch_Menu* pMenu, Nfc* pNfcMgr, Protocol* pProtocol, Touch_Menu* pSecretMenu):
+pLcd(pLcd),pMenu(pMenu),pNfcMgr(pNfcMgr),pProtocol(pProtocol), pSecretMenu(pSecretMenu)
 {
 
 	pProtocol->RequestIp();
@@ -24,19 +24,18 @@ pLcd(pLcd),pMenu(pMenu),pNfcMgr(pNfcMgr),pProtocol(pProtocol)
 
 
 	//admin tools submenu
-	pMenu->AddItem("Admin Tools (Need Auth)", &pMenu->main_menu);
-	libutil::Touch_Menu::Menu* adminMenu = pMenu->main_menu.menu_items[3].sub_menu;
+	pMenu->AddItem("Admin Tools (Need Auth)", [&](){this->Auth();}, &pMenu->main_menu);
 
 	//format submenu
-	pMenu->AddItem("format card",adminMenu);
-	libutil::Touch_Menu::Menu* formatMenu = adminMenu->menu_items[0].sub_menu;
+	pMenu->AddItem("format card",&pSecretMenu->main_menu);
+	libutil::Touch_Menu::Menu* formatMenu = pSecretMenu->main_menu.menu_items[0].sub_menu;
 	pMenu->AddItem("id",&temp_card_id,formatMenu);
 	pMenu->AddItem("balance",&temp_balance,formatMenu);
 	pMenu->AddItem("name",&temp_name,formatMenu);
 	pMenu->AddItem("Format",[&](){FormatCardDisplay();},formatMenu);
 
 	//clearcard
-	pMenu->AddItem("clear card",[&](){this->ClearCardDisplay();},adminMenu);
+	pMenu->AddItem("clear card",[&](){this->ClearCardDisplay();},&pSecretMenu->main_menu);
 
 	pLcd->ShowString(0,0,480,50,48,"crawling data...",0);
 
@@ -219,4 +218,11 @@ void Ui::StartKillAwaitListener(const string& message){
 
 void Ui::StopKillAwaitListener(){
 	pLcd->SetTouchingInterrupt([&](libbase::k60::Gpi*,TouchScreenLcd*){});
+}
+
+void Ui::Auth(){
+	TouchKeyboard kb(pLcd);
+	if(kb.ShowKeyboard()=="BoyGod Leslie") {
+		pSecretMenu->EnterMenu(&pSecretMenu->main_menu,0,0,480,800,48);
+	}
 }
