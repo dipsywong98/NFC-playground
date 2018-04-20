@@ -29,13 +29,13 @@ pLcd(pLcd),pMenu(pMenu),pNfcMgr(pNfcMgr),pProtocol(pProtocol), pSecretMenu(pSecr
 	//format submenu
 	pMenu->AddItem("format card",&pSecretMenu->main_menu);
 	libutil::Touch_Menu::Menu* formatMenu = pSecretMenu->main_menu.menu_items[0].sub_menu;
-	pMenu->AddItem("id",&temp_card_id,formatMenu);
-	pMenu->AddItem("balance",&temp_balance,formatMenu);
-	pMenu->AddItem("name",&temp_name,formatMenu);
-	pMenu->AddItem("Format",[&](){FormatCardDisplay();},formatMenu);
+	pSecretMenu->AddItem("id",&temp_card_id,formatMenu);
+	pSecretMenu->AddItem("balance",&temp_balance,formatMenu);
+	pSecretMenu->AddItem("name",&temp_name,formatMenu);
+	pSecretMenu->AddItem("Format",[&](){FormatCardDisplay();},formatMenu);
 
 	//clearcard
-	pMenu->AddItem("clear card",[&](){this->ClearCardDisplay();},&pSecretMenu->main_menu);
+	pSecretMenu->AddItem("clear card",[&](){this->ClearCardDisplay();},&pSecretMenu->main_menu);
 
 	pLcd->ShowString(0,0,480,50,48,"crawling data...",0);
 
@@ -222,7 +222,7 @@ void Ui::StopKillAwaitListener(){
 
 void Ui::Auth(){
 	TouchKeyboard kb(pLcd);
-	if(kb.ShowKeyboard()=="BoyGod Leslie") {
+	if(kb.ShowKeyboard()=="") {
 		pSecretMenu->EnterMenu(&pSecretMenu->main_menu,0,0,480,800,48);
 	}
 }
