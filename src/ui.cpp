@@ -77,13 +77,15 @@ void Ui::ReadCardDisplay(){
 	if(pNfcMgr->ReadWholeCard(pLcd)){
 		pLcd->ShowString(0,0,480,48,48,"Record (Tap to leave):",0);
 		char buf[20];
+		char buf2[30];
 		sprintf(buf,"id: %d",pNfcMgr->m_card_id);
 		pLcd->ShowString(0,50,480,48,48,buf,0);
 		sprintf(buf,"balance: %d",pNfcMgr->m_balance);
 		pLcd->ShowString(0,100,480,48,48,buf,0);
 		sprintf(buf,"name: %s;",pNfcMgr->m_name);
 		pLcd->ShowString(0,150,480,48,48,buf,0);
-		sprintf(buf,"last buy: %d;",pNfcMgr->last_tap);
+		FormatTime(buf2,pNfcMgr->last_tap,30);
+		sprintf(buf,"last buy: %s;",buf2);
 		pLcd->ShowString(0,200,480,48,48,buf,0);
 //		sprintf(buf,"cs: %d;",pNfcMgr->checksum);
 //		pLcd->ShowString(0,250,480,48,48,buf,0);
@@ -91,7 +93,8 @@ void Ui::ReadCardDisplay(){
 //		pLcd->ShowString(0,300,480,48,48,buf,0);
 		for(int i = 0; i<pNfcMgr->purchases.size();i++){
 			const Purchase& purchase = pNfcMgr->purchases[i];
-			sprintf(buf,"%d,$%d:%s",purchase.timestamp,purchase.product.price,purchase.product.name);
+			FormatTime(buf2,purchase.timestamp,12);
+			sprintf(buf,"%s,$%d:%s",buf2,purchase.product.price,purchase.product.name);
 			pLcd->ShowString(0,250+i*50,480,48,48,buf,0);
 		}
 		while(!terminate){
@@ -113,11 +116,13 @@ void Ui::ReadCardBalanceDisplay(){
 	if(pNfcMgr->ReadCard()){
 		pLcd->ShowString(0,0,480,48,48,"Record (Tap to leave):",0);
 		char buf[20];
+		char buf2[30];
 		sprintf(buf,"id: %d",pNfcMgr->m_card_id);
 		pLcd->ShowString(0,50,480,48,48,buf,0);
 		sprintf(buf,"balance: %d",pNfcMgr->m_balance);
 		pLcd->ShowString(0,100,480,48,48,buf,0);
-		sprintf(buf,"last buy: %d;",pNfcMgr->last_tap);
+		FormatTime(buf2,pNfcMgr->last_tap,30);
+		sprintf(buf,"last buy: %s;",buf2);
 		pLcd->ShowString(0,200,480,48,48,buf,0);
 		while(!terminate){
 			pLcd->ShowNum(0,750,System::Time()/100%10,1,48);
@@ -225,5 +230,21 @@ void Ui::Auth(){
 	kb.SetPasswordMode(1);
 	if(kb.ShowKeyboard()=="BoyGod Leslie") {
 		pSecretMenu->EnterMenu(&pSecretMenu->main_menu,0,0,480,800,48);
+	}
+}
+
+void Ui::FormatTime(char* buf, time_t t, size_t max_length){
+	time (&t);
+	struct tm * timeinfo = localtime (&t);
+	if(max_length>26){
+		strftime (buf, max_length, "%d-%b-%Y %H:%M:%S (%a)",timeinfo);
+	}
+	else if(max_length>20){
+		strftime (buf, max_length, "%d-%b-%Y %H:%M:%S",timeinfo);
+	} else if (max_length>=12) {
+		strftime (buf, max_length, "%d/%m %H:%M",timeinfo);
+	} else {
+		//max length too short impossible to format time
+		assert(0);
 	}
 }

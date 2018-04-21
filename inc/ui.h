@@ -10,6 +10,8 @@
 
 #include <string>
 #include <vector>
+#include <cstring>
+#include <ctime>
 
 #include "libbase/k60/flash.h"
 #include "libsc/k60/touchscreen_lcd.h"
@@ -69,5 +71,7 @@ public:
 	void StopKillAwaitListener();
 
 	void Auth();
+
+	void FormatTime(char* buf, time_t time, size_t max_length);
 };
 #endif /* INC_UI_H_ */
