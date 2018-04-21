@@ -188,12 +188,12 @@ bool Nfc::AddPurchaseHistory(const Product& product, uint32_t time){
 
 bool Nfc::ReadPurchaseHistories(TouchScreenLcd* pLcd){
 	purchases.clear();
-	for(uint8_t s_id = 0x0E; s_id<0xA7; s_id+=10){
+	for(uint8_t s_id = 0x0E; s_id<0x72; s_id+=10){
 		Byte buf[40];
 		memset(buf,'\0',40);
 		if(SendReadMulti(s_id,buf,10)){
 			char buf2[20];
-			sprintf(buf2,"hh%d",s_id-0x0E);
+			sprintf(buf2,"hh%d/10",(s_id-0x0E)/10+1);
 			pLcd->ShowString(0,500,480,50,48,buf2,0);
 			Purchase purchase;
 			memcpy(&purchase.timestamp,buf,4);
