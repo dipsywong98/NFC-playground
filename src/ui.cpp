@@ -83,7 +83,7 @@ void Ui::ReadCardDisplay(){
 		pLcd->ShowString(0,100,480,48,48,buf,0);
 		sprintf(buf,"name: %s;",pNfcMgr->m_name);
 		pLcd->ShowString(0,150,480,48,48,buf,0);
-		sprintf(buf,"last tap: %d;",pNfcMgr->last_tap);
+		sprintf(buf,"last buy: %d;",pNfcMgr->last_tap);
 		pLcd->ShowString(0,200,480,48,48,buf,0);
 //		sprintf(buf,"cs: %d;",pNfcMgr->checksum);
 //		pLcd->ShowString(0,250,480,48,48,buf,0);
@@ -117,7 +117,7 @@ void Ui::ReadCardBalanceDisplay(){
 		pLcd->ShowString(0,50,480,48,48,buf,0);
 		sprintf(buf,"balance: %d",pNfcMgr->m_balance);
 		pLcd->ShowString(0,100,480,48,48,buf,0);
-		sprintf(buf,"last tap: %d;",pNfcMgr->last_tap);
+		sprintf(buf,"last buy: %d;",pNfcMgr->last_tap);
 		pLcd->ShowString(0,200,480,48,48,buf,0);
 		while(!terminate){
 			pLcd->ShowNum(0,750,System::Time()/100%10,1,48);
