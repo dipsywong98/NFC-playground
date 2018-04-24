@@ -35,7 +35,6 @@ using libutil::Touch_Menu;
 class Ui{
 public:
 	uint16_t temp_card_id = 0;
-	int16_t temp_balance = 0;
 	int16_t add_value_amount = 0;
 	std::string temp_name = "YOO";
 	TouchScreenLcd* pLcd;

@@ -33,7 +33,7 @@ pLcd(pLcd),pMenu(pMenu),pNfcMgr(pNfcMgr),pProtocol(pProtocol), pSecretMenu(pSecr
 	pMenu->AddItem("format card",&pSecretMenu->main_menu);
 	libutil::Touch_Menu::Menu* formatMenu = pSecretMenu->main_menu.menu_items[1].sub_menu;
 	pSecretMenu->AddItem("id",&temp_card_id,formatMenu);
-	pSecretMenu->AddItem("balance",&temp_balance,formatMenu);
+	pSecretMenu->AddItem("balance",&add_value_amount,formatMenu);
 	pSecretMenu->AddItem("name",&temp_name,formatMenu);
 	pSecretMenu->AddItem("Format",[&](){FormatCardDisplay();},formatMenu);
 
@@ -67,7 +67,10 @@ void Ui::GoMainMenu(){
 void Ui::FormatCardDisplay(){
 	StartCancelNfcListener();
 	pLcd->ShowString(0,48,480,48,48,"format card",0);
-	if(pNfcMgr->FormatCard(temp_card_id,temp_balance,temp_name)){
+	if(pNfcMgr->FormatCard(temp_card_id,0,temp_name)){
+		if(add_value_amount!=0){
+			AddValueDisplay();
+		}
 		pLcd->ShowString(0,0,480,48,48,"successfully formatted",0);
 		char buf[20];
 //		sprintf(buf,"cs: %d",pNfcMgr->checksum);
