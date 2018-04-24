@@ -170,7 +170,7 @@ void Ui::ClearCardDisplay(){
 }
 
 void Ui::PurchaseProductDisplay(const Product& product){
-	char message[20] = "tap card buy";
+	char message[20] = "buy ";
 	strcat(message,product.name);
 	StartKillAwaitListener(message);
 	if(pNfcMgr->ReadCard()){
@@ -219,7 +219,7 @@ void Ui::PurchaseProductDisplay(const Product& product){
 void Ui::AddValueDisplay(){
 	Product product(0,"Add Value",add_value_amount);
 	char message[20];
-	sprintf(message,"tap card add $%d", add_value_amount);
+	sprintf(message,"Add $%d", add_value_amount);
 	StartKillAwaitListener(message);
 	if(pNfcMgr->ReadCard()){
 		const uint16_t card_id = pNfcMgr->m_card_id;
@@ -271,8 +271,8 @@ void Ui::CancelCancelNfcListener(){
 
 void Ui::StartKillAwaitListener(const string& message){
 	terminate = false;
-	pLcd->ShowString(0,0,480,48,48,(char*)message.c_str(),0);
-	pLcd->ShowString(0,50,480,48,48,"tap screen to cancel",0);
+	pLcd->ShowString(0,0,480,48,48,"tap screen to cancel",0);
+	pLcd->ShowString(0,50,480,48,48,(char*)message.c_str(),0);
 	pLcd->SetTouchingInterrupt([&](libbase::k60::Gpi*,TouchScreenLcd*){
 		pNfcMgr->Cancel();
 		pProtocol->CancelAwait();
