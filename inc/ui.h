@@ -12,6 +12,7 @@
 #include <vector>
 #include <cstring>
 #include <ctime>
+#include <algorithm>
 
 #include "libbase/k60/flash.h"
 #include "libsc/k60/touchscreen_lcd.h"

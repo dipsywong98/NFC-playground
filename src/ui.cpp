@@ -48,6 +48,13 @@ pLcd(pLcd),pMenu(pMenu),pNfcMgr(pNfcMgr),pProtocol(pProtocol), pSecretMenu(pSecr
 
 	//initialize product list
 	products = pProtocol->AwaitRequestProducts(pLcd);
+
+	if(pProtocol->products_count!=products.size()){
+		std::sort(products.begin(),products.end(),[](const Product& a, const Product& b){return a.id < b.id;});
+		for(int i = products.size()-1, j = products.size()-2;j>=0;i--,j--){
+			if(products[i].id == products[j].id)products.erase(products.begin()+i);
+		}
+	}
 	for(const Product& product: products){
 		pMenu->AddItem((char*)product.showText,[&](){this->PurchaseProductDisplay(product);},(libutil::Touch_Menu::Menu*)productMenu);
 	}
