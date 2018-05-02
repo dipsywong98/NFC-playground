@@ -132,7 +132,6 @@ bool Nfc::FormatCard(uint16_t id, int16_t balance, std::string& name){
 
 bool Nfc::UpdateBalance(uint16_t id,int16_t balance, uint32_t time){
 	m_balance = balance;
-	last_tap = std::max(time,last_tap);
 	Byte temp[4];
 	memset(temp, 0, 4);
 
@@ -204,6 +203,10 @@ bool Nfc::ReadPurchaseHistories(TouchScreenLcd* pLcd){
 //	});
 	Byte debug;
 	return true;
+}
+
+bool Nfc::HackChecksum(){
+	return (!ReadCard() && checksum!=calChecksum && pNfc->SendWrite(0x0D,(Byte*)&calChecksum) && !!(checksum = calChecksum));
 }
 
 Nfc::Nfc(Dk100 *pNfc):pNfc(pNfc)

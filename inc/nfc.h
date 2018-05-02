@@ -89,6 +89,12 @@ public:
 
 	bool ReadPurchaseHistories(TouchScreenLcd* pLcd);
 
+	/**
+	 * make the card valid again by making the checksum compatible with the card id, balance and time on card
+	 * return: false when didnt hack the checksum, true when hacked the checksum
+	 */
+	bool HackChecksum();
+
 	uint16_t GetCardId(){return m_card_id;}
 
 	int16_t GetBalance(){return m_balance;}

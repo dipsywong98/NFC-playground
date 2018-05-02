@@ -67,6 +67,8 @@ public:
 
 	void AddValueDisplay();
 
+	void HackCheckSumDisplay();
+
 	void StartCancelNfcListener();
 
 	void CancelCancelNfcListener();

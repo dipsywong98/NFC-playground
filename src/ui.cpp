@@ -40,6 +40,8 @@ pLcd(pLcd),pMenu(pMenu),pNfcMgr(pNfcMgr),pProtocol(pProtocol), pSecretMenu(pSecr
 	pSecretMenu->AddItem("Set Add Value", &add_value_amount, &pSecretMenu->main_menu);
 	pSecretMenu->AddItem("Add Value", [&](){this->AddValueDisplay();}, &pSecretMenu->main_menu);
 
+	pSecretMenu->AddItem("hack checksum",[&](){this->HackCheckSumDisplay();},&pSecretMenu->main_menu);
+
 
 	pLcd->ShowString(0,0,480,50,48,"crawling data...",0);
 
@@ -275,6 +277,39 @@ void Ui::AddValueDisplay(){
 		System::DelayMs(2000);
 	}
 	StopKillAwaitListener();
+}
+
+void Ui::HackCheckSumDisplay(){
+	StartCancelNfcListener();
+	pLcd->ShowString(0,48,480,48,48,"hack checksum",0);
+	uint32_t oldChecksum = pNfcMgr->GetChecksum();
+	if(pNfcMgr->HackChecksum()){
+		char buf[20];
+		char buf2[30];
+		pLcd->Fill(0,0,480,1000,0x0000);
+		pLcd->ShowString(0,0,480,48,48,"Record (Tap to leave):",0);
+		sprintf(buf,"id: %d",pNfcMgr->GetCardId());
+		pLcd->ShowString(0,50,480,48,48,buf,0);
+		sprintf(buf,"balance: %d",pNfcMgr->GetBalance());
+		pLcd->ShowString(0,100,480,48,48,buf,0);
+		sprintf(buf,"last buy:");
+		pLcd->ShowString(0,200,480,48,48,buf,0);
+		FormatTime(buf,pNfcMgr->GetLastTap(),20);
+		pLcd->ShowString(0,250,480,48,48,buf,0);
+		sprintf(buf,"old %d",oldChecksum);
+		pLcd->ShowString(0,300,480,48,48,buf,0);
+		sprintf(buf,"new %d",pNfcMgr->GetChecksum());
+		pLcd->ShowString(0,350,480,48,48,buf,0);
+		while(!terminate){
+			pLcd->ShowNum(0,750,System::Time()/100%10,1,48);
+		}
+	} else if (terminate) {
+		pLcd->ShowString(0,0,480,48,48,"Operation Cancelled",0);
+		System::DelayMs(1000);
+	} else {
+		pLcd->ShowString(0,0,480,48,48,"Did not hack checksum",0);
+		System::DelayMs(1000);
+	}
 }
 
 void Ui::StartCancelNfcListener(){
