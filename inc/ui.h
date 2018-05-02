@@ -42,6 +42,7 @@ public:
 	Touch_Menu* pSecretMenu;
 	Nfc* pNfcMgr;
 	Protocol* pProtocol;
+	bool clicked_bottom = false;
 
 	string ip;
 	vector<Product> products;
@@ -55,6 +56,8 @@ public:
 	void FormatCardDisplay();
 
 	void ReadCardDisplay();
+
+	void ReadCardPage(bool page);
 
 	void ReadCardBalanceDisplay();
 

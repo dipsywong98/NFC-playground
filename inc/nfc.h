@@ -33,13 +33,11 @@ using libsc::k60::Dk100;
 class Nfc{
 public:
 
-	uint16_t m_card_id = 0;
-	int16_t m_balance = 0;
+
 	char m_name[34];
 	char temp[4];
 	vector<Purchase> purchases;
 
-	uint32_t last_tap = 0, checksum = 0, calChecksum = 0;
 
 	Nfc(Dk100 *pNfc);
 	inline uint32_t CalChecksum(uint16_t id, int16_t balance, uint32_t timestamp);
@@ -91,6 +89,16 @@ public:
 
 	bool ReadPurchaseHistories(TouchScreenLcd* pLcd);
 
+	uint16_t GetCardId(){return m_card_id;}
+
+	int16_t GetBalance(){return m_balance;}
+
+	uint32_t GetLastTap(){return last_tap;}
+
+	uint32_t GetChecksum(){return checksum;}
+
+	uint32_t GetCalChecksum(){return calChecksum;}
+
 private:
 
 	Dk100 *pNfc = nullptr;
@@ -101,6 +109,10 @@ private:
 
 	uint32_t A = 4219, B = 97729, C = 543217;
 	uint8_t last_sector = 0x0E;
+
+	uint16_t m_card_id = 0;
+	int16_t m_balance = 0;
+	uint32_t last_tap = 0, checksum = 0, calChecksum = 0;
 };
 
 #endif /* INC_NFC_H_ */

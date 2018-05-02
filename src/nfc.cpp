@@ -92,17 +92,6 @@ bool Nfc::ReadWholeCard(TouchScreenLcd* pLcd){
 	strcat(buf,"h");
 	pLcd->ShowString(0,500,480,50,48,buf,0);
 	if(!ReadPurchaseHistories(pLcd))return false;
-//	purchases.clear();
-//	pNfc->SendRead(0xE0);
-//	uint8_t headsector;
-//	Byte buf[45];
-//	memcpy(&headsector,pNfc->GetData(),1);
-//	SendReadMulti(14+10*headsector,buf,10);
-//	Purchase purchase;
-//	memcpy(&purchase.timestamp,buf,4);
-//	memcpy(&purchase.product.price,buf+4,2);
-//	memcpy(&purchase.product.name,buf+8,32);
-//	purchases.push_back(purchase);
 	return true;
 }
 

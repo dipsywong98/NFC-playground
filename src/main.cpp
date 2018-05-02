@@ -12,6 +12,8 @@
 #include <libsc/system.h>
 #include <vector>
 
+#include "libbase/k60/hardware.h"
+#include "libbase/k60/vectors.h"
 #include "libbase/k60/flash.h"
 #include "libsc/k60/touchscreen_lcd.h"
 #include "libsc/k60/dk100.h"
@@ -59,6 +61,7 @@ int main(){
 	};
 	Dk100 nfc(config);
 
+//	NVIC_SetPriority((Uint)0x43,7);
 
 	pNfc = &nfc;
 	nfc.SetReadSuccessHandler([&](const Byte& sector, const Byte *data){

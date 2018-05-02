@@ -73,7 +73,7 @@ void Ui::FormatCardDisplay(){
 		}
 		pLcd->ShowString(0,0,480,48,48,"successfully formatted",0);
 		char buf[20];
-//		sprintf(buf,"cs: %d",pNfcMgr->checksum);
+//		sprintf(buf,"cs: %d",pNfcMgr->GetChecksum());
 //		pLcd->ShowString(0,50,480,48,48,buf,0);
 //		while(!terminate){
 //
@@ -92,29 +92,23 @@ void Ui::ReadCardDisplay(){
 		pLcd->Fill(0,0,480,1000,0x0000);
 		pLcd->ShowString(0,0,480,48,48,"Record (Tap to leave):",0);
 		char buf[20];
-		char buf2[30];
-		sprintf(buf,"id: %d",pNfcMgr->m_card_id);
+		char buf2[20];
+		sprintf(buf,"id: %d",pNfcMgr->GetCardId());
 		pLcd->ShowString(0,50,480,48,48,buf,0);
-		sprintf(buf,"balance: %d",pNfcMgr->m_balance);
+		sprintf(buf,"balance: %d",pNfcMgr->GetBalance());
 		pLcd->ShowString(0,100,480,48,48,buf,0);
 		sprintf(buf,"name: %s;",pNfcMgr->m_name);
 		pLcd->ShowString(0,150,480,48,48,buf,0);
-		FormatTime(buf2,pNfcMgr->last_tap,12);
-		sprintf(buf,"last buy:%s;",buf2);
-		pLcd->ShowString(0,200,480,48,48,buf,0);
-//		sprintf(buf,"cs: %d;",pNfcMgr->checksum);
-//		pLcd->ShowString(0,250,480,48,48,buf,0);
-//		sprintf(buf,"CS: %d;",pNfcMgr->calChecksum);
-//		pLcd->ShowString(0,300,480,48,48,buf,0);
-		for(int i = 0; i<pNfcMgr->purchases.size();i++){
-			const Purchase& purchase = pNfcMgr->purchases[i];
-			FormatTime(buf2,purchase.timestamp,12);
-			sprintf(buf,"%s,$%d:%s",buf2,purchase.product.price,purchase.product.name);
-			pLcd->ShowString(0,250+i*50,480,48,48,buf,0);
-		}
+		FormatTime(buf,pNfcMgr->GetLastTap(),12);
+		sprintf(buf2,"last buy:%s;",buf);
+		pLcd->ShowString(0,200,480,48,48,buf2,0);
+		bool page = 0;
 		while(!terminate){
-			pLcd->ShowNum(0,750,System::Time()/100%10,1,48);
+			ReadCardPage(page);
+			page = !page;
 		}
+
+
 	} else if(terminate) {
 		pLcd->ShowString(0,0,480,48,48,"operation canceled  ",0);
 		System::DelayMs(1000);
@@ -125,6 +119,33 @@ void Ui::ReadCardDisplay(){
 	CancelCancelNfcListener();
 }
 
+void Ui::ReadCardPage(bool page){
+	char buf[20];
+	char buf2[20];
+	const int size = pNfcMgr->purchases.size();
+	for(int i = 0; i<size/2;i++){
+		pLcd->DrawLine(0,250+i*100,480,250+i*100);
+		const Purchase& purchase = pNfcMgr->purchases[i+size/2*page];
+		FormatTime(buf,purchase.timestamp,26);
+		pLcd->ShowString(0,252+i*100,480,48,48,buf,0);
+		sprintf(buf,"$%d:%s",purchase.product.price,purchase.product.name);
+		pLcd->ShowString(0,300+i*100,480,48,48,buf,0);
+	}
+	if(page == 0)sprintf(buf,"[Next Page]");
+	else sprintf(buf,"[Prev Page]");
+	pLcd->ShowString(100,750,480,48,48,buf,0);
+	clicked_bottom = false;
+	CancelCancelNfcListener();
+	while(true){
+		pLcd->ShowNum(0,750,System::Time()/100%10,1,48);
+		pLcd->Scan(0);
+		if(pLcd->touch_status!=4){
+			if(pLcd->touch_y[0]<700)terminate = true;
+			break;
+		}
+	}
+}
+
 void Ui::ReadCardBalanceDisplay(){
 	StartCancelNfcListener();
 	pLcd->ShowString(0,48,480,48,48,"read card balance",0);
@@ -133,13 +154,13 @@ void Ui::ReadCardBalanceDisplay(){
 		pLcd->ShowString(0,0,480,48,48,"Record (Tap to leave):",0);
 		char buf[20];
 		char buf2[30];
-		sprintf(buf,"id: %d",pNfcMgr->m_card_id);
+		sprintf(buf,"id: %d",pNfcMgr->GetCardId());
 		pLcd->ShowString(0,50,480,48,48,buf,0);
-		sprintf(buf,"balance: %d",pNfcMgr->m_balance);
+		sprintf(buf,"balance: %d",pNfcMgr->GetBalance());
 		pLcd->ShowString(0,100,480,48,48,buf,0);
 		sprintf(buf,"last buy:");
 		pLcd->ShowString(0,200,480,48,48,buf,0);
-		FormatTime(buf,pNfcMgr->last_tap,20);
+		FormatTime(buf,pNfcMgr->GetLastTap(),20);
 		pLcd->ShowString(0,250,480,48,48,buf,0);
 		while(!terminate){
 			pLcd->ShowNum(0,750,System::Time()/100%10,1,48);
@@ -174,9 +195,9 @@ void Ui::PurchaseProductDisplay(const Product& product){
 	strcat(message,product.name);
 	StartKillAwaitListener(message);
 	if(pNfcMgr->ReadCard()){
-		const uint16_t card_id = pNfcMgr->m_card_id;
-		int16_t balance = pNfcMgr->m_balance;
-		uint32_t checksum = pNfcMgr->checksum;
+		const uint16_t card_id = pNfcMgr->GetCardId();
+		int16_t balance = pNfcMgr->GetBalance();
+		uint32_t checksum = pNfcMgr->GetChecksum();
 		if(balance>=product.price){
 			pProtocol->RequestPurchase(card_id,product.id,product.price,checksum);
 			uint32_t time = pProtocol->AwaitRequestPurchase(pLcd);
@@ -222,9 +243,9 @@ void Ui::AddValueDisplay(){
 	sprintf(message,"Add $%d", add_value_amount);
 	StartKillAwaitListener(message);
 	if(pNfcMgr->ReadCard()){
-		const uint16_t card_id = pNfcMgr->m_card_id;
-		int16_t balance = pNfcMgr->m_balance;
-		uint32_t checksum = pNfcMgr->checksum;
+		const uint16_t card_id = pNfcMgr->GetCardId();
+		int16_t balance = pNfcMgr->GetBalance();
+		uint32_t checksum = pNfcMgr->GetChecksum();
 
 		pProtocol->RequestPurchase(card_id,product.id,product.price,checksum);
 		uint32_t time = pProtocol->AwaitRequestPurchase(pLcd);
