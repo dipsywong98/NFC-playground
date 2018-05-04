@@ -92,23 +92,24 @@ void Ui::ReadCardDisplay(){
 	StartCancelNfcListener();
 	pLcd->ShowString(0,48,480,48,48,"read card history",0);
 	if(pNfcMgr->ReadWholeCard(pLcd)){
-		pLcd->Fill(0,0,480,1000,0x0000);
-		pLcd->ShowString(0,0,480,48,48,"Record (Tap to leave):",0);
-		char buf[20];
-		char buf2[20];
-		sprintf(buf,"id: %d",pNfcMgr->GetCardId());
-		pLcd->ShowString(0,50,480,48,48,buf,0);
-		sprintf(buf,"balance: %d",pNfcMgr->GetBalance());
-		pLcd->ShowString(0,100,480,48,48,buf,0);
-		sprintf(buf,"name: %s;",pNfcMgr->m_name);
-		pLcd->ShowString(0,150,480,48,48,buf,0);
-		FormatTime(buf,pNfcMgr->GetLastTap(),12);
-		sprintf(buf2,"last buy:%s;",buf);
-		pLcd->ShowString(0,200,480,48,48,buf2,0);
+
 		bool page = 0;
 		while(!terminate){
+			pLcd->Clear(0x0000);
+			pLcd->ShowString(0,0,480,48,48,"Record (Tap to leave):",0);
+			char buf[20];
+			char buf2[20];
+			sprintf(buf,"id: %d",pNfcMgr->GetCardId());
+			pLcd->ShowString(0,50,480,48,48,buf,0);
+			sprintf(buf,"balance: %d",pNfcMgr->GetBalance());
+			pLcd->ShowString(0,100,480,48,48,buf,0);
+			sprintf(buf,"name: %s",pNfcMgr->m_name);
+			pLcd->ShowString(0,150,480,48,48,buf,0);
+			FormatTime(buf,pNfcMgr->GetLastTap(),12);
+			sprintf(buf2,"last buy:%s",buf);
+			pLcd->ShowString(0,200,480,48,48,buf2,0);
 			ReadCardPage(page);
-			page = !page;
+			if((pNfcMgr->purchases.size()-1)/5)page = !page;
 			System::DelayMs(2000);
 		}
 
@@ -127,15 +128,16 @@ void Ui::ReadCardPage(bool page){
 	char buf[20];
 	char buf2[20];
 	const int size = pNfcMgr->purchases.size();
-	for(int i = 0; i<size/2;i++){
+	for(int i = 0; i<5 && i+5*page<size;i++){
 		pLcd->DrawLine(0,250+i*100,480,250+i*100);
-		const Purchase& purchase = pNfcMgr->purchases[i+size/2*page];
+		const Purchase& purchase = pNfcMgr->purchases[i+5*page];
 		FormatTime(buf,purchase.timestamp,26);
 		pLcd->ShowString(0,252+i*100,480,48,48,buf,0);
 		sprintf(buf,"$%d:%s",purchase.product.price,purchase.product.name);
 		pLcd->ShowString(0,300+i*100,480,48,48,buf,0);
 	}
-	pLcd->ShowString(100,750,480,48,48,buf,0);
+	sprintf(buf,"page %d",page+1);
+	pLcd->ShowString(0,750,480,48,48,buf,0);
 }
 
 void Ui::ReadCardBalanceDisplay(){

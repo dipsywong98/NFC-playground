@@ -85,12 +85,12 @@ bool Nfc::ReadCard(){
 }
 
 bool Nfc::ReadWholeCard(TouchScreenLcd* pLcd){
+	pLcd->ShowString(0,450,480,50,48,"Read Progress:",0);
+	pLcd->ShowString(0,500,480,50,48,"0/12",0);
 	if(!ReadCard())return false;
-	char buf[20] = "h";
-	pLcd->ShowString(0,500,480,50,48,buf,0);
+	pLcd->ShowString(0,500,480,50,48,"1/12",0);
 	if(!ReadName())return false;
-	strcat(buf,"h");
-	pLcd->ShowString(0,500,480,50,48,buf,0);
+	pLcd->ShowString(0,500,480,50,48,"2/12",0);
 	if(!ReadPurchaseHistories(pLcd))return false;
 	return true;
 }
@@ -181,7 +181,7 @@ bool Nfc::ReadPurchaseHistories(TouchScreenLcd* pLcd){
 		memset(buf,'\0',40);
 		if(SendReadMulti(s_id,buf,10)){
 			char buf2[20];
-			sprintf(buf2,"hh%d/10",(s_id-0x0E)/10+1);
+			sprintf(buf2,"%d/12",(s_id-0x0E)/10+3);
 			pLcd->ShowString(0,500,480,50,48,buf2,0);
 			Purchase purchase;
 			memcpy(&purchase.timestamp,buf,4);
@@ -198,9 +198,9 @@ bool Nfc::ReadPurchaseHistories(TouchScreenLcd* pLcd){
 	for(int i=0; i<10; i++){
 		d = purchases[0];
 	}
-//	std::sort(purchases.begin(),purchases.end(),[](const Purchase& a, const Purchase&b){
-//		return a.timestamp<b.timestamp;
-//	});
+	std::sort(purchases.begin(),purchases.end(),[](const Purchase& a, const Purchase&b){
+		return a.timestamp<b.timestamp;
+	});
 	Byte debug;
 	return true;
 }
