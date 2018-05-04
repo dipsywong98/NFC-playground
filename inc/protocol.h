@@ -9,6 +9,7 @@
 #define INC_PROTOCOL_H_
 
 #include <string>
+#include <map>
 #include "libsc/k60/touchscreen_lcd.h"
 
 #include "bluetooth.h"
@@ -43,6 +44,10 @@ public:
 		});
 	}
 
+	void SetResendPeriod(time_t period){
+		m_bt.SetResendPeriod(period);
+	}
+
 	/**
 	 * Return 0 means submit request fail,
 	 * probably previous same request have not received
@@ -75,6 +80,7 @@ public:
 
 private:
 	bool cancel_await = false;
+	std::map<int,bool> product_received;
 };
 
 

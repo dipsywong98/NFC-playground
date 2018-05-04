@@ -61,7 +61,10 @@ int main(){
 	};
 	Dk100 nfc(config);
 
-	NVIC_SetPriority(UART3_RX_TX_IRQn,7);
+	NVIC_SetPriority(UART3_RX_TX_IRQn,1);
+	NVIC_SetPriority(PIT1_IRQn,2);
+	NVIC_SetPriority(PIT0_IRQn,2);
+	NVIC_SetPriority(PIT2_IRQn,2);
 
 	pNfc = &nfc;
 	nfc.SetReadSuccessHandler([&](const Byte& sector, const Byte *data){

@@ -71,7 +71,10 @@ void Protocol::ProductsHandler(const Bluetooth::Package& pkg){
 		memcpy(product.name,&*pkg.data.begin()+1,pkg.data.size()-3);
 		memcpy(&product.price,&*pkg.data.end()-2,2);
 		sprintf(product.showText,"$%d:%s",product.price,product.name);
-		products.push_back(product);
+		if(product_received[product.id] == false){
+			product_received[product.id] = true;
+			products.push_back(product);
+		}
 	}
 	if(products.size() == products_count){
 		products_ready = true;

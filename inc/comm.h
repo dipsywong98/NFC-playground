@@ -117,8 +117,11 @@ private:
 
 	//for generating unique id
 	uint32_t historic_package_sum = 0;
+	uint32_t handled_package_sum = 0;
 
 	std::function<void(const Package&)> m_CustomHandler;
+
+	Byte debug[100];
 };
 
 

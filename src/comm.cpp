@@ -28,6 +28,7 @@ uint8_t Comm::CalChecksum(const vector<Byte>& buf){
 uint8_t Comm::QueuePackage(Package pkg){
 	pkg.id = ++historic_package_sum;
 	m_sendqueue.push_back(pkg);
+	SendPackageImmediate(pkg);
 	return pkg.id;
 }
 
@@ -57,7 +58,6 @@ void Comm::Period(){
 }
 
 bool Comm::Listener(const Byte* data, const size_t& size){
-	Byte debug[100];
 	memset(debug,0,100);
 	memcpy(debug,&*buffer.begin(),buffer.size());
 	for(uint8_t i=0; i<size; i++){
@@ -77,7 +77,7 @@ bool Comm::Listener(const Byte* data, const size_t& size){
 }
 
 void Comm::BuildBufferPackage(const vector<Byte>& buffer){
-	Byte debug[100];
+	++handled_package_sum;
 	memset(debug,0,100);
 	memcpy(debug,&*buffer.begin(),buffer[1]);
 

@@ -70,12 +70,12 @@ bool Nfc::ReadCard(){
 	memcpy(&m_balance, buf_+2,2);
 
 	//checksum
-	pNfc->SendRead(0x0D);
+	if(!pNfc->SendRead(0x0D))return false;
 	buf_ = pNfc->GetData();
 	memcpy(&checksum, buf_, 4);
 
 	//last tap timestamp
-	pNfc->SendRead(0xE1);
+	if(!pNfc->SendRead(0xE1))return false;
 	buf_ = pNfc->GetData();
 	memcpy(&last_tap, buf_, 4);
 

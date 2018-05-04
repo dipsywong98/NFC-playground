@@ -10,7 +10,7 @@
 Ui::Ui(TouchScreenLcd* pLcd, Touch_Menu* pMenu, Nfc* pNfcMgr, Protocol* pProtocol, Touch_Menu* pSecretMenu):
 pLcd(pLcd),pMenu(pMenu),pNfcMgr(pNfcMgr),pProtocol(pProtocol), pSecretMenu(pSecretMenu)
 {
-
+	pProtocol->SetResendPeriod(100);
 	pProtocol->RequestIp();
 	pProtocol->RequestProducts();
 
@@ -60,6 +60,7 @@ pLcd(pLcd),pMenu(pMenu),pNfcMgr(pNfcMgr),pProtocol(pProtocol), pSecretMenu(pSecr
 	for(const Product& product: products){
 		pMenu->AddItem((char*)product.showText,[&](){this->PurchaseProductDisplay(product);},(libutil::Touch_Menu::Menu*)productMenu);
 	}
+	pProtocol->SetResendPeriod(1000);
 }
 
 void Ui::GoMainMenu(){
@@ -108,6 +109,7 @@ void Ui::ReadCardDisplay(){
 		while(!terminate){
 			ReadCardPage(page);
 			page = !page;
+			System::DelayMs(2000);
 		}
 
 
@@ -133,19 +135,7 @@ void Ui::ReadCardPage(bool page){
 		sprintf(buf,"$%d:%s",purchase.product.price,purchase.product.name);
 		pLcd->ShowString(0,300+i*100,480,48,48,buf,0);
 	}
-	if(page == 0)sprintf(buf,"[Next Page]");
-	else sprintf(buf,"[Prev Page]");
 	pLcd->ShowString(100,750,480,48,48,buf,0);
-	clicked_bottom = false;
-	CancelCancelNfcListener();
-	while(true){
-		pLcd->ShowNum(0,750,System::Time()/100%10,1,48);
-		pLcd->Scan(0);
-		if(pLcd->touch_status!=4){
-			if(pLcd->touch_y[0]<700)terminate = true;
-			break;
-		}
-	}
 }
 
 void Ui::ReadCardBalanceDisplay(){

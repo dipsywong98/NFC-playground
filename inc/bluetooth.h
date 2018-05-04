@@ -11,9 +11,11 @@
 #include "libsc/k60/jy_mcu_bt_106.h"
 #include "libbase/k60/pit.h"
 #include "libsc/k60/uart_device.h"
+#include <libsc/system.h>
 
 #include "comm.h"
 
+using libsc::System;
 using libsc::k60::JyMcuBt106;
 using libbase::k60::Pit;
 
@@ -26,9 +28,19 @@ public:
 		m_bt.SendBuffer(data,size);
 	}
 
+	void SetResendPeriod(time_t period){
+		resend_period = period;
+	}
+
 private:
 	JyMcuBt106 m_bt;
 	Pit m_pit;
+
+	/**
+	 * resend request for this period in ms
+	 */
+	time_t resend_period = 10;
+	time_t next_send = 0;
 
 	JyMcuBt106::Config GetBtConfig(int bt_id){
 		JyMcuBt106::Config config;
@@ -45,7 +57,10 @@ private:
 		config.channel = pit_channel;
 		config.count = 75000*250;
 		config.isr = [&](Pit*){
-			Comm::Period();
+			if(System::Time()>next_send){
+				next_send+=resend_period;
+				Comm::Period();
+			}
 		};
 		return config;
 	}
