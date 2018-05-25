@@ -7,23 +7,21 @@
 
 #include "protocol.h"
 
-bool Protocol::RequestIp(){
+uint8_t Protocol::RequestIp(){
 	ip_ready = false;
 	waiting_ip = true;
-	m_bt.QueuePackage({Bluetooth::PkgType::kRequestIp,0,{}});
-	return 1;
+	return m_bt.QueuePackage({Bluetooth::PkgType::kRequestIp,0,{}});;
 }
 
-bool Protocol::RequestProducts(){
+uint8_t Protocol::RequestProducts(){
 	products_ready = false;
 	waiting_products = true;
 	products_count = -1;
 	products.clear();
-	m_bt.QueuePackage({Bluetooth::PkgType::kRequestProducts,0,{}});
-	return 1;
+	return m_bt.QueuePackage({Bluetooth::PkgType::kRequestProducts,0,{}});
 }
 
-bool Protocol::RequestPurchase(uint16_t card_id, uint8_t product_id, uint16_t amount_deducted, uint32_t checksum){
+uint8_t Protocol::RequestPurchase(uint16_t card_id, uint8_t product_id, uint16_t amount_deducted, uint32_t checksum){
 	purchase_ready = false;
 	waiting_purchase = true;
 	vector<Byte> data(9);
@@ -31,8 +29,7 @@ bool Protocol::RequestPurchase(uint16_t card_id, uint8_t product_id, uint16_t am
 	memcpy(&*data.begin()+2,&product_id,1);
 	memcpy(&*data.begin()+3,&amount_deducted,2);
 	memcpy(&*data.begin()+5,&checksum,4);
-	m_bt.QueuePackage({Bluetooth::PkgType::kPurchase,0,data});
-	return 1;
+	return m_bt.QueuePackage({Bluetooth::PkgType::kPurchase,0,data});
 }
 
 void Protocol::Handler(const Bluetooth::Package& pkg){

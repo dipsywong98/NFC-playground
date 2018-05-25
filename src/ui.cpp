@@ -193,7 +193,7 @@ void Ui::PurchaseProductDisplay(const Product& product){
 		int16_t balance = pNfcMgr->GetBalance();
 		uint32_t checksum = pNfcMgr->GetChecksum();
 		if(balance>=product.price){
-			pProtocol->RequestPurchase(card_id,product.id,product.price,checksum);
+			pkg_id = pProtocol->RequestPurchase(card_id,product.id,product.price,checksum);
 			uint32_t time = pProtocol->AwaitRequestPurchase(pLcd);
 			if(!terminate){
 				balance -= product.price;
@@ -228,6 +228,7 @@ void Ui::PurchaseProductDisplay(const Product& product){
 		pLcd->ShowString(0,0,480,48,48,"invalid card  ",0);
 		System::DelayMs(2000);
 	}
+	pProtocol->m_bt.RemoveQueuedPackage(pkg_id);
 	StopKillAwaitListener();
 }
 
@@ -241,7 +242,7 @@ void Ui::AddValueDisplay(){
 		int16_t balance = pNfcMgr->GetBalance();
 		uint32_t checksum = pNfcMgr->GetChecksum();
 
-		pProtocol->RequestPurchase(card_id,product.id,product.price,checksum);
+		pkg_id = pProtocol->RequestPurchase(card_id,product.id,product.price,checksum);
 		uint32_t time = pProtocol->AwaitRequestPurchase(pLcd);
 		if(!terminate){
 			balance += add_value_amount;
@@ -268,6 +269,7 @@ void Ui::AddValueDisplay(){
 		pLcd->ShowString(0,0,480,48,48,"invalid card  ",0);
 		System::DelayMs(2000);
 	}
+	pProtocol->m_bt.RemoveQueuedPackage(pkg_id);
 	StopKillAwaitListener();
 }
 

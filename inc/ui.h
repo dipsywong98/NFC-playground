@@ -43,6 +43,7 @@ public:
 	Nfc* pNfcMgr;
 	Protocol* pProtocol;
 	bool clicked_bottom = false;
+	uint8_t pkg_id;
 
 	string ip;
 	vector<Product> products;

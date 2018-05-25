@@ -98,16 +98,21 @@ void Comm::BuildBufferPackage(const vector<Byte>& buffer){
 
 void Comm::Handler(const Package& pkg){
 	if(pkg.type == PkgType::kACK){
-		for(uint8_t i=0; i<m_sendqueue.size(); i++){
-			if(m_sendqueue[i].id == pkg.id){
-				m_sendqueue.erase(m_sendqueue.begin()+i);
-				break;
-			}
-		}
+		RemoveQueuedPackage(pkg.id);
 	} else {
 		SendPackageImmediate({PkgType::kACK,pkg.id,{}});
 	}
 	if(m_CustomHandler){
 		m_CustomHandler(pkg);
 	}
+}
+
+bool Comm::RemoveQueuedPackage(uint8_t id){
+	for(uint8_t i=0; i<m_sendqueue.size(); i++){
+		if(m_sendqueue[i].id == id){
+			m_sendqueue.erase(m_sendqueue.begin()+i);
+			return true;
+		}
+	}
+	return false;
 }

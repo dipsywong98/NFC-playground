@@ -85,7 +85,8 @@ int main(){
 	Protocol protocol;
 
 	Ui ui(&lcd,&menu,&nfcMgr,&protocol,&secretmenu);
-	ui.GoMainMenu();
+
+	while(1)ui.GoMainMenu();
 
 	while(1){
 		lcd.ShowNum(0,0,yo,4,48);

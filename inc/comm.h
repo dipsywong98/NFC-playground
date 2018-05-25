@@ -110,6 +110,15 @@ public:
 		m_CustomHandler = CustomHandler;
 	}
 
+	/**
+	 * return true when successfully delete the specified package from the queue
+	 */
+	bool RemoveQueuedPackage(uint8_t id);
+
+	void ClearQueue(){
+		m_sendqueue.clear();
+	}
+
 private:
 
 	vector<Package> m_sendqueue;
@@ -122,6 +131,7 @@ private:
 	std::function<void(const Package&)> m_CustomHandler;
 
 	Byte debug[100];
+
 };
 
 

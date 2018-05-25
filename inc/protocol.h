@@ -52,9 +52,9 @@ public:
 	 * Return 0 means submit request fail,
 	 * probably previous same request have not received
 	 */
-	bool RequestIp();
-	bool RequestProducts();
-	bool RequestPurchase(uint16_t card_id, uint8_t product_id, uint16_t amount_deducted, uint32_t checksum);
+	uint8_t RequestIp();
+	uint8_t RequestProducts();
+	uint8_t RequestPurchase(uint16_t card_id, uint8_t product_id, uint16_t amount_deducted, uint32_t checksum);
 
 	void Handler(const Bluetooth::Package& pkg);
 	void IpHandler(const Bluetooth::Package& pkg);
